@@ -6,10 +6,10 @@ using namespace std;
 class ParkingSlot
 {
 public:
-    int slotNum;
-    int zoneNum;
+    int SlotID;
+    int zoneID;
     bool isOccupied;
-    string vehId;
+    string OccByVehicleID;
 
     ParkingSlot(int sid, int zid);
 
