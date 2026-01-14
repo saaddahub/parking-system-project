@@ -9,7 +9,7 @@ public:
     string vehId;
     int ZoneToGoId;
 
-    vehicle(string id, int ztgid);
+    vehicle(string id, int ToGo);
 };
 
 #endif
