@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>UMT Parking Access</title>
+    <style>
+        /* Modern Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* Deep Gradient Background */
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            /* Glass-like Card Effect */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 350px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            /* Whole card floats slightly */
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- INPUT STYLING --- */
+        input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid transparent;
+            border-radius: 30px;
+            /* Fully rounded corners */
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            text-align: center;
+
+            /* The Animation Magic */
+            transition: all 0.3s ease;
+        }
+
+        /* Placeholder Color */
+        input::placeholder {
+            color: #aaa;
+        }
+
+        /* Hover & Focus Effect (Make it Bigger & Glow) */
+        input:hover,
+        input:focus {
+            transform: scale(1.05);
+            /* Make it slightly bigger */
+            border-color: #00ff88;
+            /* Neon Green Border */
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        /* --- BUTTON STYLING --- */
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+            /* Nice Green Gradient */
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+
+            /* Animation Magic */
+            transition: all 0.3s ease;
+        }
+
+        /* Hover Effect (Glow & Scale) */
+        button:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 0 25px rgba(150, 201, 61, 0.7);
+            /* Strong Glow */
+        }
+
+        button:active {
+            transform: scale(0.95);
+            /* Click effect */
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            display: none;
+            text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+            animation: shake 0.3s ease-in-out;
+        }
+
+        /* Shake animation for error */
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>UMT Parking OS</h2>
+
+        <input type="text" id="username" placeholder="Operator ID" autocomplete="off">
+        <input type="password" id="password" placeholder="Access Code">
+
+        <button onclick="login()">Access System</button>
+
+        <p class="error" id="error-msg">⚠ ACCESS DENIED</p>
+    </div>
+
+    <script>
+        function login() {
+            var u = document.getElementById("username").value;
+            var p = document.getElementById("password").value;
+
+            // Credentials check
+            if (u === "saad" && p === "dsatheory") {
+                window.location.href = "dashboard.html";
+            } else {
+                var err = document.getElementById("error-msg");
+                err.style.display = "block";
+
+                // Reset animation to allow shaking again
+                err.style.animation = 'none';
+                err.offsetHeight; /* trigger reflow */
+                err.style.animation = "shake 0.3s ease-in-out";
+            }
+        }
+
+        // Allow pressing "Enter" to login
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

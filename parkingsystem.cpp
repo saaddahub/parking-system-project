@@ -7,16 +7,15 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
 {
     this->totalZones = numZones;
     this->engine = new AllocationEngine();
+    this->rbManager = new RollbackManager();
     this->zones = new Zone *[totalZones];
 
     for (int i = 0; i < totalZones; i++)
     {
-        this->zones[i] = new Zone(i + 1, 2); // 2 Areas per Zone
-        // Add 2 Areas
+        this->zones[i] = new Zone(i + 1, 2);
         this->zones[i]->addArea(1, slotsPerZone);
         this->zones[i]->addArea(2, slotsPerZone);
 
-        // Add slots to areas
         for (int a = 0; a < this->zones[i]->CurCount; a++)
         {
             for (int s = 0; s < slotsPerZone; s++)
@@ -34,18 +33,28 @@ ParkingSystem::~ParkingSystem()
         delete zones[i];
     delete[] zones;
     delete engine;
+    delete rbManager;
 }
 
-bool ParkingSystem::parkVehicle(Vehicle *v)
+bool ParkingSystem::parkVehicle(ParkingRequest *req)
 {
-    ParkingSlot *slot = engine->assignSlot(v, zones, totalZones);
+    req->updateStatus(REQUESTED);
+    ParkingSlot *slot = engine->assignSlot(req->vehicle, zones, totalZones);
+
     if (slot)
     {
-        cout << "Success: " << v->vehId << " parked in Zone " << slot->zoneNum << endl;
+        req->updateStatus(ALLOCATED);
+        req->updateStatus(OCCUPIED);
+
+        // SAVE HISTORY
+        rbManager->pushOperation(PARK_ACTION, req, slot);
+
+        cout << "Success: " << req->vehicle->vehId << " parked in Zone " << slot->zoneNum << endl;
         exportToHTML();
         return true;
     }
-    cout << "Failed to park " << v->vehId << endl;
+    req->updateStatus(CANCELLED);
+    cout << "Failed to park." << endl;
     return false;
 }
 
@@ -63,15 +72,10 @@ bool ParkingSystem::removeVehicle(int zID, int sID)
                     {
                         if (zones[i]->areas[a]->slots[s]->isOccupied)
                         {
-                            cout << zones[i]->areas[a]->slots[s]->vehId << " left." << endl;
                             zones[i]->areas[a]->slots[s]->free();
+                            cout << "Vehicle Removed." << endl;
                             exportToHTML();
                             return true;
-                        }
-                        else
-                        {
-                            cout << "Slot empty." << endl;
-                            return false;
                         }
                     }
                 }
@@ -81,10 +85,28 @@ bool ParkingSystem::removeVehicle(int zID, int sID)
     return false;
 }
 
-void ParkingSystem::showStatus()
+void ParkingSystem::undoLastAction()
 {
-    // Console status (optional)
+    if (rbManager->isEmpty())
+    {
+        cout << "Nothing to undo!" << endl;
+        return;
+    }
+
+    HistoryNode *action = rbManager->popOperation();
+
+    if (action->type == PARK_ACTION)
+    {
+        cout << "UNDO: Removing " << action->slot->vehId << " from history." << endl;
+        action->slot->free();
+        action->request->updateStatus(CANCELLED);
+    }
+
+    exportToHTML();
+    delete action;
 }
+
+void ParkingSystem::showStatus() {}
 
 void ParkingSystem::exportToHTML()
 {
