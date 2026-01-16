@@ -2,24 +2,31 @@
 #include <iostream>
 using namespace std;
 
-ParkingSlot *AllocationEngine::assignSlot(vehicle *v, zone **zones, int numZones)
+ParkingSlot *AllocationEngine::assignSlot(Vehicle *v, Zone **zones, int numZones)
 {
 
     // --- STRATEGY 1: Check Preferred Zone ---
     for (int i = 0; i < numZones; i++)
     {
-        if (zones[i]->ZoneID == v->ZoneToGoId)
+        if (zones[i]->zoneID == v->preferredZoneID)
         {
 
             if (!zones[i]->isFull())
             {
-                for (int j = 0; j < zones[i]->CurCount; j++)
+                // Loop through AREAS using your variable 'CurCount'
+                for (int a = 0; a < zones[i]->CurCount; a++)
                 {
-                    // Using your specific variable names
-                    if (!zones[i]->slots[j]->isOccupied)
+
+                    // Loop through SLOTS in that area
+                    for (int s = 0; s < zones[i]->areas[a]->currentCount; s++)
                     {
-                        zones[i]->slots[j]->occupy(v->vehId);
-                        return zones[i]->slots[j];
+
+                        if (!zones[i]->areas[a]->slots[s]->isOccupied)
+                        {
+                            // Found space!
+                            zones[i]->areas[a]->slots[s]->occupy(v->vehId);
+                            return zones[i]->areas[a]->slots[s];
+                        }
                     }
                 }
             }
@@ -32,18 +39,24 @@ ParkingSlot *AllocationEngine::assignSlot(vehicle *v, zone **zones, int numZones
 
     for (int i = 0; i < numZones; i++)
     {
-        if (zones[i]->ZoneID == v->ZoneToGoId)
+        if (zones[i]->zoneID == v->preferredZoneID)
             continue;
 
         if (!zones[i]->isFull())
         {
-            for (int j = 0; j < zones[i]->CurCount; j++)
+            // Check Areas (CurCount)
+            for (int a = 0; a < zones[i]->CurCount; a++)
             {
-                if (!zones[i]->slots[j]->isOccupied)
+                // Check Slots (currentCount)
+                for (int s = 0; s < zones[i]->areas[a]->currentCount; s++)
                 {
-                    zones[i]->slots[j]->occupy(v->vehId);
-                    cout << "Re-routed to Zone " << zones[i]->ZoneID << endl;
-                    return zones[i]->slots[j];
+
+                    if (!zones[i]->areas[a]->slots[s]->isOccupied)
+                    {
+                        zones[i]->areas[a]->slots[s]->occupy(v->vehId);
+                        cout << "Re-routed to Zone " << zones[i]->zoneID << endl;
+                        return zones[i]->areas[a]->slots[s];
+                    }
                 }
             }
         }

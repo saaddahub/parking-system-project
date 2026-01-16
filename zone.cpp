@@ -7,12 +7,11 @@ zone::zone(int id, int cap)
     this->ZoneID = id;
     this->capacity = cap;
     this->CurCount = 0;
-    this->slots = new ParkingSlot *[capacity];
+    this->areas = new ParkingArea *[capacity];
 
-    // Initialize them to empty (nullptr)
     for (int i = 0; i < capacity; i++)
     {
-        this->slots[i] = nullptr;
+        this->areas[i] = nullptr;
     }
 }
 
@@ -21,16 +20,16 @@ zone::~zone()
 {
     for (int i = 0; i < CurCount; i++)
     {
-        delete slots[i];
+        delete areas[i];
     }
-    delete[] slots;
+    delete[] areas;
 }
 
-void zone::SlotAddition(int slotID)
+void zone::SlotAddition(int slotID, int CapacityPerArea)
 {
     if (CurCount < capacity)
     {
-        slots[CurCount] = new ParkingSlot(slotID, this->ZoneID);
+        areas[CurCount] = new ParkingArea(areaID, this->ZoneID, CapacityPerArea);
         CurCount++;
     }
 }
@@ -43,11 +42,13 @@ bool zone::isFull()
 
     for (int i = 0; i < CurCount; i++)
     {
-        // If we find a slot that is NOT occupied, the zone is NOT full
-        if (slots[i]->isOccupied == false)
+        for (int j = 0; j < areas[i]->CurCount; j++)
         {
-            return false;
+            if (!areas[i]->slots[j]->isOccupied)
+            {
+                return false;
+            }
         }
     }
-    return true; // All slots were occupied
+    return true;
 }
