@@ -1,15 +1,14 @@
-#ifndef vehicle_h
-#define vehicle_h
+#ifndef VEHICLE_H
+#define VEHICLE_H
 #include <string>
-    using namespace std;
+using namespace std;
 
-class vehicle
+class Vehicle
 {
 public:
     string vehId;
-    int ZoneToGoId;
+    int preferredZoneID;
 
-    vehicle(string id, int ToGo);
+    Vehicle(string id, int zone);
 };
-
 #endif

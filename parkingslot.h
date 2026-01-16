@@ -1,19 +1,18 @@
-#ifndef parkingslot_h
-#define parkingslot_h
+#ifndef PARKINGSLOT_H
+#define PARKINGSLOT_H
 #include <string>
 using namespace std;
 
 class ParkingSlot
 {
 public:
-    int SlotID;
-    int zoneID;
+    int slotNum;
+    int zoneNum;
     bool isOccupied;
-    string OccByVehicleID;
+    string vehId; // Stores the ID of the car parked here
 
-    ParkingSlot(int sid, int zid);
-
-    void occupy(string vehId);
+    ParkingSlot(int sNum, int zNum);
+    void occupy(string vId);
     void free();
 };
 #endif

@@ -1,30 +1,51 @@
 #include <iostream>
+#include <string>
 #include "parkingsystem.h"
 #include "vehicle.h"
-
 using namespace std;
+
+const string ADMIN_USER = "admin";
+const string ADMIN_PASS = "secure123";
 
 int main()
 {
-    ParkingSystem cityParking(3, 2);
+    string u, p;
+    cout << "USER: ";
+    cin >> u;
+    cout << "PASS: ";
+    cin >> p;
+    if (u != ADMIN_USER || p != ADMIN_PASS)
+        return 0;
 
-    cityParking.showStatus();
+    ParkingSystem sys(3, 2); // 3 Zones, 2 slots per area
 
-    vehicle *v1 = new vehicle("ABC-123", 1);
-    vehicle *v2 = new vehicle("XYZ-789", 1);
-    vehicle *v3 = new vehicle("LHR-555", 1);
-    vehicle *v4 = new vehicle("DXB-999", 2);
-
-    cityParking.parkVehicle(v1);
-    cityParking.parkVehicle(v2);
-    cityParking.parkVehicle(v3);
-    cityParking.parkVehicle(v4);
-
-    cityParking.showStatus();
-
-    cityParking.removeVehicle(1, 1);
-
-    cityParking.showStatus();
-
+    int choice;
+    while (true)
+    {
+        cout << "\n1. Park  2. Remove  3. Exit\nSelect: ";
+        cin >> choice;
+        if (choice == 1)
+        {
+            string vID;
+            int zID;
+            cout << "VehID: ";
+            cin >> vID;
+            cout << "PrefZone: ";
+            cin >> zID;
+            Vehicle *v = new Vehicle(vID, zID);
+            sys.parkVehicle(v);
+        }
+        else if (choice == 2)
+        {
+            int z, s;
+            cout << "Zone: ";
+            cin >> z;
+            cout << "Slot: ";
+            cin >> s;
+            sys.removeVehicle(z, s);
+        }
+        else
+            break;
+    }
     return 0;
 }

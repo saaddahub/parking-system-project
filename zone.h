@@ -1,21 +1,18 @@
-#ifndef zone_h
-#define zone_h
-
+#ifndef ZONE_H
+#define ZONE_H
 #include "parkingarea.h"
 
-class zone
+class Zone
 {
 public:
-    int ZoneID;
+    int zoneID;
     int capacity;
-    int CurCount;
+    int CurCount; // Using your PascalCase variable
     ParkingArea **areas;
 
-    zone(int zid, int cap);
-    ~zone(); // destructor
-
-    void SlotAddition(int slotid, int CapacityPerArea);
+    Zone(int id, int cap);
+    ~Zone();
+    void addArea(int areaID, int capacityPerArea);
     bool isFull();
 };
-
 #endif

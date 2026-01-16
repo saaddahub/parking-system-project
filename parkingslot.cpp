@@ -1,22 +1,21 @@
 #include "parkingslot.h"
-#include <iostream>
-using namespace std;
 
-ParkingSlot::ParkingSlot(int sid, int zid)
+ParkingSlot::ParkingSlot(int sNum, int zNum)
 {
-    this->SlotID = sid;
-    this->zoneID = zid;
+    this->slotNum = sNum;
+    this->zoneNum = zNum;
     this->isOccupied = false;
-    this->OccByVehicleID = "";
+    this->vehId = "";
 }
 
-void ParkingSlot::occupy(string vehId)
+void ParkingSlot::occupy(string vId)
 {
     this->isOccupied = true;
-    this->OccByVehicleID = vehId;
+    this->vehId = vId;
 }
+
 void ParkingSlot::free()
 {
     this->isOccupied = false;
-    this->OccByVehicleID = "";
+    this->vehId = "";
 }

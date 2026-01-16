@@ -1,6 +1,7 @@
 #include "vehicle.h"
-vehicle::vehicle(string id, int ToGo)
+
+Vehicle::Vehicle(string id, int zone)
 {
     this->vehId = id;
-    this->ZoneToGoId = ToGo;
+    this->preferredZoneID = zone;
 }

@@ -1,6 +1,5 @@
-#ifndef allocationenigne_h
-#define allocationenigne_h
-
+#ifndef ALLOCATIONENGINE_H
+#define ALLOCATIONENGINE_H
 #include "zone.h"
 #include "vehicle.h"
 #include "parkingslot.h"
@@ -8,7 +7,6 @@
 class AllocationEngine
 {
 public:
-    ParkingSlot* assignSlot(vehicle *veh, zone **zones, int numZones);
+    ParkingSlot *assignSlot(Vehicle *v, Zone **zones, int numZones);
 };
-
 #endif

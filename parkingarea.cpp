@@ -7,30 +7,23 @@ ParkingArea::ParkingArea(int aID, int zID, int cap)
     this->capacity = cap;
     this->currentCount = 0;
 
-    // Allocate memory for the slots
     this->slots = new ParkingSlot *[capacity];
     for (int i = 0; i < capacity; i++)
-    {
         this->slots[i] = nullptr;
-    }
 }
 
 ParkingArea::~ParkingArea()
 {
-    // Delete all slots inside this area
     for (int i = 0; i < currentCount; i++)
-    {
         delete slots[i];
-    }
     delete[] slots;
 }
 
-void ParkingArea::addSlot(int slotID)
+void ParkingArea::addSlot(int slotNum)
 {
     if (currentCount < capacity)
     {
-        // Create a new slot. Note: We pass zoneID so the slot knows where it lives.
-        slots[currentCount] = new ParkingSlot(slotID, this->zoneID);
+        slots[currentCount] = new ParkingSlot(slotNum, this->zoneID);
         currentCount++;
     }
 }

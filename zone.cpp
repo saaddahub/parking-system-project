@@ -1,53 +1,42 @@
 #include "zone.h"
-#include <iostream>
-using namespace std;
 
-zone::zone(int id, int cap)
+Zone::Zone(int id, int cap)
 {
-    this->ZoneID = id;
+    this->zoneID = id;
     this->capacity = cap;
     this->CurCount = 0;
-    this->areas = new ParkingArea *[capacity];
 
+    this->areas = new ParkingArea *[capacity];
     for (int i = 0; i < capacity; i++)
-    {
         this->areas[i] = nullptr;
-    }
 }
 
-// Destructor (Cleaning up memory)
-zone::~zone()
+Zone::~Zone()
 {
     for (int i = 0; i < CurCount; i++)
-    {
         delete areas[i];
-    }
     delete[] areas;
 }
 
-void zone::SlotAddition(int slotID, int CapacityPerArea)
+void Zone::addArea(int areaID, int capacityPerArea)
 {
     if (CurCount < capacity)
     {
-        areas[CurCount] = new ParkingArea(areaID, this->ZoneID, CapacityPerArea);
+        areas[CurCount] = new ParkingArea(areaID, this->zoneID, capacityPerArea);
         CurCount++;
     }
 }
 
-// Check if full
-bool zone::isFull()
+bool Zone::isFull()
 {
     if (CurCount == 0)
-        return true; // Safety check
-
+        return true;
     for (int i = 0; i < CurCount; i++)
     {
-        for (int j = 0; j < areas[i]->CurCount; j++)
+        for (int j = 0; j < areas[i]->currentCount; j++)
         {
             if (!areas[i]->slots[j]->isOccupied)
-            {
                 return false;
-            }
         }
     }
     return true;
