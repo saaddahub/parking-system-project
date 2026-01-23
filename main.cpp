@@ -12,15 +12,16 @@ const string ADMIN_PASS = "dsatheory";
 int main()
 {
     string u, p;
-    cout << "=== UMT PARKING SYSTEM ===" << endl;
-    cout << "USER: ";
+    cout << "\tUMT PARKING SYSTEM" << endl;
+    cout << "Enter Username: ";
     cin >> u;
-    cout << "PASS: ";
+    cout << "Enter your Password: ";
     cin >> p;
 
     if (u != ADMIN_USER || p != ADMIN_PASS)
     {
         cout << "Access Denied." << endl;
+        cout << "Failed to fetch login credentials" << endl;
         return 0;
     }
 
@@ -29,9 +30,9 @@ int main()
     int choice;
     while (true)
     {
-        cout << "\n1. Park Vehicle" << endl;
-        cout << "2. Remove Vehicle" << endl;
-        cout << "3. UNDO Last Action" << endl;
+        cout << "\n1. Vehicle Parking" << endl;
+        cout << "2. Remove Vehicle from parking" << endl;
+        cout << "3. UNDO previous Action" << endl;
         cout << "4. Exit" << endl;
         cout << "Select: ";
         cin >> choice;
@@ -40,9 +41,9 @@ int main()
         {
             string vID;
             int zID;
-            cout << "Enter Vehicle ID: ";
+            cout << "Enter Vehicle Number: ";
             cin >> vID;
-            cout << "Preferred Zone (1-3): ";
+            cout << "Preferred Parking Zone (1-3): ";
             cin >> zID;
 
             Vehicle *v = new Vehicle(vID, zID);
@@ -53,9 +54,9 @@ int main()
         else if (choice == 2)
         {
             int z, s;
-            cout << "Enter Zone ID: ";
+            cout << "Enter Zone you want to enter: ";
             cin >> z;
-            cout << "Enter Slot ID: ";
+            cout << "Enter Slot Number: ";
             cin >> s;
             sys.removeVehicle(z, s);
         }
@@ -65,7 +66,7 @@ int main()
         }
         else if (choice == 4)
         {
-            cout << "Exiting..." << endl;
+            cout << "Exiting the program in 3,2,1..." << endl;
             break;
         }
     }
