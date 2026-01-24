@@ -17,7 +17,7 @@ ParkingRequest::ParkingRequest(Vehicle *v)
     this->penaltyCost = 0.0;
 }
 void ParkingRequest::updateStatus(int newStatus)
-}
+{
 {
     if (this->status == REQUESTED && newStatus == OCCUPIED)
     {
