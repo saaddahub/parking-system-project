@@ -5,7 +5,8 @@
 #include "vehicle.h"
 #include "allocationengine.h"
 #include "parkingrequest.h"
-#include "rollbackmanager.h" // <--- ADDED THIS
+#include "rollbackmanager.h"
+#include "History.h"
 
 class ParkingSystem
 {
@@ -13,7 +14,9 @@ public:
     Zone **zones;
     int totalZones;
     AllocationEngine *engine;
-    RollbackManager *rbManager; // <--- ADDED THIS
+    RollbackManager *rbManager;
+    HistoryManager *history;
+    int globalTime;
 
     ParkingSystem(int numZones, int slotsPerZone);
     ~ParkingSystem();
@@ -21,8 +24,7 @@ public:
     bool parkVehicle(ParkingRequest *req);
     bool removeVehicle(int zoneID, int slotNum);
 
-    void undoLastAction(); // <--- THIS FIXES YOUR SECOND ERROR
-
+    void undoLastAction();
     void showStatus();
     void exportToHTML();
 };

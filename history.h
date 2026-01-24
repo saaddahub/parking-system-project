@@ -7,9 +7,13 @@ struct HistoryRecord
     ParkingRequest *data;
     HistoryRecord *next;
 };
+
 class HistoryManager
 {
+private:
     HistoryRecord *head;
+
+public:
     int count;
 
     HistoryManager()
@@ -17,7 +21,8 @@ class HistoryManager
         head = nullptr;
         count = 0;
     }
-    void add(ParkingRequest *req)
+
+    void addRecord(ParkingRequest *req)
     {
         HistoryRecord *newRecord = new HistoryRecord();
         newRecord->data = req;
@@ -26,7 +31,7 @@ class HistoryManager
         count++;
     }
 
-    double getAvgDuration()
+    double getAverageDuration()
     {
         if (count == 0)
             return 0.0;
@@ -39,6 +44,7 @@ class HistoryManager
         }
         return totalDuration / count;
     }
+
     double getTotalRevenue()
     {
         double total = 0;
