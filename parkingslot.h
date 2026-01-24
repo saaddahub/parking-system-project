@@ -16,7 +16,7 @@ public:
 
     ParkingSlot(int sNum, int zNum);
 
-    // FIXED: Must have 2 arguments for the new system
+    // FIXED: Must have 2 arguments
     void occupy(string vId, ParkingRequest *req);
 
     void free();
