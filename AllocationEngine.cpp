@@ -17,7 +17,7 @@ ParkingSlot *AllocationEngine::assignSlot(Vehicle *v, Zone **zones, int numZones
                     {
                         if (!zones[i]->areas[a]->slots[s]->isOccupied)
                         {
-                            zones[i]->areas[a]->slots[s]->occupy(v->vehId);
+                            // REMOVED: occupy() call. ParkingSystem will handle it.
                             return zones[i]->areas[a]->slots[s];
                         }
                     }
@@ -41,7 +41,7 @@ ParkingSlot *AllocationEngine::assignSlot(Vehicle *v, Zone **zones, int numZones
                 {
                     if (!zones[i]->areas[a]->slots[s]->isOccupied)
                     {
-                        zones[i]->areas[a]->slots[s]->occupy(v->vehId);
+                        // REMOVED: occupy() call.
                         cout << "Re-routed to Zone " << zones[i]->zoneID << endl;
                         return zones[i]->areas[a]->slots[s];
                     }

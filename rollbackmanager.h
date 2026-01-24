@@ -4,30 +4,28 @@
 #include "parkingrequest.h"
 #include "parkingslot.h"
 
-// Types of actions we can undo
-enum ActionType
-{
-    PARK_ACTION,
-    REMOVE_ACTION
-};
+// CONSTANTS (No Enum)
+const int PARK_ACTION = 0;
+const int REMOVE_ACTION = 1;
 
-// A Stack Node (Linked List)
-struct HistoryNode
+// Renamed to 'RollbackNode' to avoid conflict with History.h
+struct RollbackNode
 {
-    ActionType type;
+    int type; // 0 or 1
     ParkingRequest *request;
     ParkingSlot *slot;
-    HistoryNode *next;
+    RollbackNode *next;
 };
 
 class RollbackManager
 {
 public:
-    HistoryNode *top;
+    RollbackNode *top;
 
     RollbackManager();
-    void pushOperation(ActionType type, ParkingRequest *req, ParkingSlot *slot);
-    HistoryNode *popOperation();
+    // Changed 'ActionType' to 'int'
+    void pushOperation(int type, ParkingRequest *req, ParkingSlot *slot);
+    RollbackNode *popOperation();
     bool isEmpty();
 };
 

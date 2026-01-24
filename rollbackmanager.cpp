@@ -6,9 +6,9 @@ RollbackManager::RollbackManager()
     this->top = nullptr;
 }
 
-void RollbackManager::pushOperation(ActionType type, ParkingRequest *req, ParkingSlot *slot)
+void RollbackManager::pushOperation(int type, ParkingRequest *req, ParkingSlot *slot)
 {
-    HistoryNode *newNode = new HistoryNode;
+    RollbackNode *newNode = new RollbackNode;
     newNode->type = type;
     newNode->request = req;
     newNode->slot = slot;
@@ -16,11 +16,11 @@ void RollbackManager::pushOperation(ActionType type, ParkingRequest *req, Parkin
     top = newNode;
 }
 
-HistoryNode *RollbackManager::popOperation()
+RollbackNode *RollbackManager::popOperation()
 {
     if (isEmpty())
         return nullptr;
-    HistoryNode *temp = top;
+    RollbackNode *temp = top;
     top = top->next;
     return temp;
 }
