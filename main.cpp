@@ -1,14 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdlib> // for remove()
+#include <cstdlib>
 #include "parkingsystem.h"
 #include "vehicle.h"
 #include "parkingrequest.h"
 
 using namespace std;
 
-// Helper to check if file exists
 bool fileExists(const string &name)
 {
     ifstream f(name.c_str());
@@ -29,10 +28,8 @@ int main()
 
     while (true)
     {
-        // 1. WATCH FOR FILE
         if (fileExists("command.txt"))
         {
-            // 2. READ COMMAND
             ifstream infile("command.txt");
             string action;
             infile >> action;
@@ -62,12 +59,9 @@ int main()
             }
 
             infile.close();
-
-            // 3. DELETE FILE (So we don't read it twice)
             remove("command.txt");
         }
-
-        // Tiny manual delay loop to prevent high CPU usage
+        // Small delay to save CPU
         for (int i = 0; i < 10000000; i++)
         {
         }

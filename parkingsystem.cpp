@@ -31,9 +31,7 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
     exportToHTML();
 }
 
-ParkingSystem::~ParkingSystem()
-{
-}
+ParkingSystem::~ParkingSystem() {}
 
 bool ParkingSystem::parkVehicle(ParkingRequest *req)
 {

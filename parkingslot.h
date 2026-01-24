@@ -16,7 +16,7 @@ public:
 
     ParkingSlot(int sNum, int zNum);
 
-    // FIXED: Added the second parameter 'ParkingRequest *req' to match the .cpp file
+    // FIXED: Must have 2 arguments for the new system
     void occupy(string vId, ParkingRequest *req);
 
     void free();
