@@ -1,38 +1,28 @@
 #include "parkingrequest.h"
+#include <iostream>
+using namespace std;
 
-// A global counter to give every request a unique ID (1001, 1002, etc.)
-int globalRequestID = 1000;
+const int REQUESTED = 0;
+const int ALLOCATED = 1;
+const int OCCUPIED = 2;
+const int COMPLETED = 3;
+const int CANCELLED = 4;
 
 ParkingRequest::ParkingRequest(Vehicle *v)
 {
     this->vehicle = v;
-    this->requestID = ++globalRequestID;
-    this->status = REQUESTED;    // Initial state is always REQUESTED [cite: 46]
-    this->requestTime = time(0); // Stores the exact second the request was made
+    this->status = REQUESTED;
+    this->startTime = 0;
+    this->endTime = 0;
+    this->penaltyCost = 0.0;
 }
-
-void ParkingRequest::updateStatus(RequestStatus newStatus)
-{
-    // In a real strict system, we would check if the transition is valid here.
-    // For example, you can't go from REQUESTED to RELEASED directly.
-    this->status = newStatus;
+void ParkingRequest::updateStatus(int newStatus)
 }
-
-string ParkingRequest::getStatusString()
 {
-    switch (status)
+    if (this->status == REQUESTED && newStatus == OCCUPIED)
     {
-    case REQUESTED:
-        return "REQUESTED";
-    case ALLOCATED:
-        return "ALLOCATED";
-    case OCCUPIED:
-        return "OCCUPIED";
-    case CANCELLED:
-        return "CANCELLED";
-    case RELEASED:
-        return "RELEASED";
-    default:
-        return "UNKNOWN";
+        cout << "ERROR, invalid state Transition" << endl;
+        return;
     }
+    this->status = newStatus;
 }
