@@ -16,9 +16,9 @@ ParkingRequest::ParkingRequest(Vehicle *v)
     this->endTime = 0;
     this->penaltyCost = 0.0;
 }
+
 void ParkingRequest::updateStatus(int newStatus)
-{
-{
+{ // <--- FIXED: Only one opening bracket here
     if (this->status == REQUESTED && newStatus == OCCUPIED)
     {
         cout << "ERROR, invalid state Transition" << endl;

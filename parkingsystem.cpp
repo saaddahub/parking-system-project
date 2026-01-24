@@ -109,12 +109,13 @@ void ParkingSystem::undoLastAction()
 
 void ParkingSystem::showStatus() {}
 
-// --- THE CYBERPUNK UI GENERATOR ---
+// --- THE CYBERPUNK UI GENERATOR (SMART REFRESH EDITION) ---
 void ParkingSystem::exportToHTML()
 {
     ofstream file("dashboard.html");
 
-    file << "<html><head><meta http-equiv='refresh' content='3'>";
+    // REMOVED THE META REFRESH TAG HERE
+    file << "<html><head>";
     file << "<title>NEON PARKING OS</title>";
     file << "<style>";
     file << "body { background-color: #050510; color: #00ffcc; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; }";
@@ -144,7 +145,7 @@ void ParkingSystem::exportToHTML()
 
     file << "</style>";
 
-    // JAVASCRIPT FOR BUTTONS
+    // JAVASCRIPT LOGIC
     file << "<script>";
     file << "function sendCmd(type) {";
     file << "  let content = '';";
@@ -157,11 +158,19 @@ void ParkingSystem::exportToHTML()
     file << "    if(!z || !s) { alert('Enter Details'); return; }";
     file << "    content = 'REMOVE ' + z + ' ' + s;";
     file << "  } else if(type === 'UNDO') { content = 'UNDO'; }";
-
     file << "  const blob = new Blob([content], { type: 'text/plain' });";
     file << "  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
     file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
     file << "}";
+
+    // --- SMART REFRESH LOGIC ---
+    // Only refresh if the user is NOT typing in an input box
+    file << "setInterval(function() {";
+    file << "  if (document.activeElement.tagName !== 'INPUT') {";
+    file << "    location.reload();";
+    file << "  }";
+    file << "}, 2000);"; // Check every 2 seconds
+
     file << "</script>";
 
     file << "</head><body>";
