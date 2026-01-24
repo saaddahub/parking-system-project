@@ -10,12 +10,15 @@ public:
     int slotNum;
     int zoneNum;
     bool isOccupied;
-    string vehId; 
+    string vehId;
 
     ParkingRequest *currentReq;
 
     ParkingSlot(int sNum, int zNum);
-    void occupy(string vId);
+
+    // FIXED: Added the second parameter 'ParkingRequest *req' to match the .cpp file
+    void occupy(string vId, ParkingRequest *req);
+
     void free();
 };
 #endif
