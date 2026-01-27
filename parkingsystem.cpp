@@ -31,7 +31,18 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
     exportToHTML();
 }
 
-ParkingSystem::~ParkingSystem() {}
+ParkingSystem::~ParkingSystem()
+{
+    // Fix Memory Leaks
+    for (int i = 0; i < totalZones; ++i) {
+        // Assuming Zone destructor handles its areas/slots or we need to look at Zone
+        delete zones[i]; 
+    }
+    delete[] zones;
+    delete engine;
+    delete rbManager;
+    delete history;
+}
 
 bool ParkingSystem::parkVehicle(ParkingRequest *req)
 {
@@ -107,122 +118,130 @@ void ParkingSystem::undoLastAction()
     exportToHTML();
 }
 
-void ParkingSystem::showStatus() {}
+void ParkingSystem::showStatus() {
+    cout << "\n--- GRID STATUS ---" << endl;
+    for(int i=0; i < totalZones; i++) {
+        cout << "ZONE " << zones[i]->zoneID << ":" << endl;
+        for (int a = 0; a < zones[i]->CurCount; a++) {
+             for (int s = 0; s < zones[i]->areas[a]->currentCount; s++) {
+                 ParkingSlot* slot = zones[i]->areas[a]->slots[s];
+                 cout << "  [ S" << slot->slotNum << ": ";
+                 if(slot->isOccupied) {
+                     cout << slot->vehId;
+                     if(slot->currentReq && slot->currentReq->penaltyCost > 0) cout << "(!)"; 
+                 } else {
+                     cout << "FREE";
+                 }
+                 cout << " ]";
+             }
+             cout << endl;
+        }
+    }
+    cout << "-------------------\n" << endl;
+}
 
-// --- MANUAL MODE UI GENERATOR ---
+// --- DASHBOARD UI GENERATOR (READ ONLY) ---
+// Premium Design, No JS Interactions needed for user
 void ParkingSystem::exportToHTML()
 {
     ofstream file("dashboard.html");
 
-    file << "<html><head>";
-    file << "<title>NEON PARKING OS</title>";
-
-    // --- MODERN CSS (Glassmorphism & Cyberpunk) ---
+    file << "<!DOCTYPE html><html><head>";
+    file << "<title>NEON PARKING MONITOR</title>";
+    
+    // Auto-refresh can be annoying if manually handling, but user asked for "browser should show me".
+    // Since we are doing "manual" reload, I will NOT add meta refresh.
+    
     file << "<style>";
-    file << "@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');";
-    file << "body { background: #0b0c15; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; text-align: center; margin: 0; padding: 20px; }";
-    file << "h1 { color: #00ff9d; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px rgba(0, 255, 157, 0.6); margin-bottom: 40px; }";
+    file << "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');";
+    file << "body { background-color: #050505; color: #fff; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }";
+    file << "::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }";
+    
+    file << ".container { max-width: 1200px; margin: 0 auto; }";
+    file << "header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #222; padding-bottom: 20px; }";
+    file << "h1 { font-family: 'Orbitron', sans-serif; font-size: 3em; margin: 0; background: linear-gradient(90deg, #00f260, #0575E6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0, 242, 96, 0.3); }";
+    file << ".subtitle { color: #666; font-size: 1.2em; letter-spacing: 2px; margin-top: 10px; }";
 
-    // Control Panel
-    file << ".control-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 25px; max-width: 700px; margin: 0 auto 50px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }";
-    file << "input { background: rgba(0,0,0,0.3); border: 1px solid #333; color: white; padding: 12px; margin: 5px; border-radius: 8px; font-family: inherit; font-size: 1.1em; outline: none; transition: 0.3s; }";
-    file << "input:focus { border-color: #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.2); }";
+    // KPI Cards
+    file << ".kpi-grid { display: flex; justify-content: center; gap: 20px; margin-bottom: 50px; }";
+    file << ".kpi-card { background: #111; border: 1px solid #333; padding: 20px 40px; border-radius: 12px; text-align: center; min-width: 150px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }";
+    file << ".kpi-val { font-size: 2.5em; font-weight: bold; color: #fff; font-family: 'Orbitron'; }";
+    file << ".kpi-label { color: #888; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }";
 
-    // Buttons
-    file << "button { background: linear-gradient(45deg, #00ff9d, #00cc7a); color: #0b0c15; border: none; padding: 12px 30px; font-weight: 800; cursor: pointer; margin: 5px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }";
-    file << "button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4); }";
-    file << ".btn-red { background: linear-gradient(45deg, #ff3e3e, #d60000); color: white; }";
-    file << ".btn-red:hover { box-shadow: 0 5px 15px rgba(255, 62, 62, 0.4); }";
-    file << ".btn-undo { background: linear-gradient(45deg, #f0ad4e, #ec971f); color: white; }";
-
-    // Zones Grid
-    file << ".zones-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 0 50px; }";
-    file << ".zone-card { background: #13141f; border-top: 4px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }";
-    file << ".zone-card:hover { transform: translateY(-5px); border-color: #00ff9d; }";
-    file << ".zone-title { font-size: 1.8em; color: #fff; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #2a2b3d; padding-bottom: 10px; }";
-
+    // Zone Grid
+    file << ".zone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }";
+    file << ".zone-card { background: #0f1012; border-radius: 16px; border: 1px solid #1f2026; padding: 25px; position: relative; overflow: hidden; transition: transform 0.3s; }";
+    file << ".zone-card:hover { transform: translateY(-5px); border-color: #444; }";
+    file << ".zone-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #00f260, #0575E6); }";
+    
+    file << ".zone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }";
+    file << ".zone-title { font-family: 'Orbitron'; font-size: 1.5em; color: #e0e0e0; }";
+    
     // Slots
-    file << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; border-radius: 8px; background: #1a1b26; border: 1px solid #2a2b3d; font-weight: 600; }";
-    file << ".free { border-left: 4px solid #00ff9d; color: #a0a0a0; }";
-    file << ".occ { border-left: 4px solid #ff3e3e; background: rgba(255, 62, 62, 0.05); color: #fff; }";
-    file << ".penalty { background: #ff3e3e; color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; margin-left: 10px; }";
+    file << ".slot-list { display: grid; gap: 10px; }";
+    file << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 8px; background: #18191f; border-left: 5px solid #333; font-weight: 700; font-size: 1.1em; transition: 0.2s; }";
+    
+    // States
+    file << ".slot.free { border-left-color: #00f260; color: #aaa; }";
+    file << ".slot.free .status { color: #00f260; background: rgba(0, 242, 96, 0.1); padding: 4px 10px; border-radius: 4px; font-size: 0.8em; }";
+    
+    file << ".slot.occupied { border-left-color: #ff0055; background: #1f1015; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 85, 0.1); }";
+    file << ".slot.occupied .status { color: #ff0055; background: rgba(255, 0, 85, 0.1); padding: 4px 10px; border-radius: 4px; font-size: 0.8em; }";
+    
+    file << ".veh-id { letter-spacing: 1px; }";
+    file << ".penalty-tag { background: #ffcc00; color: #000; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; margin-left: 10px; font-weight: bold; }";
 
-    // Stats
-    file << ".stats { display: flex; justify-content: center; gap: 40px; margin-top: 60px; padding: 30px; background: #0f101a; border-top: 1px solid #2a2b3d; }";
-    file << ".stat-item { text-align: center; }";
-    file << ".stat-val { font-size: 3em; font-weight: 800; color: #fff; line-height: 1; }";
-    file << ".stat-label { font-size: 0.9em; color: #888; letter-spacing: 2px; margin-top: 10px; }";
-    file << "</style>";
+    // Footer
+    file << ".footer { margin-top: 50px; text-align: center; color: #444; font-size: 0.8em; }";
 
-    // --- JAVASCRIPT (Actions ONLY, NO REFRESH) ---
-    file << "<script>";
+    file << "</style></head><body>";
 
-    file << "function sendCmd(type) {";
-    file << "  let content = '';";
-    file << "  if(type === 'PARK') {";
-    file << "    let v = document.getElementById('vId').value; let z = document.getElementById('zId').value;";
-    file << "    if(!v || !z) { alert('Enter Details'); return; }";
-    file << "    content = 'PARK ' + v + ' ' + z;";
-    file << "  } else if(type === 'REMOVE') {";
-    file << "    let z = document.getElementById('remZ').value; let s = document.getElementById('remS').value;";
-    file << "    if(!z || !s) { alert('Enter Details'); return; }";
-    file << "    content = 'REMOVE ' + z + ' ' + s;";
-    file << "  } else if(type === 'UNDO') { content = 'UNDO'; }";
-    file << "  const blob = new Blob([content], { type: 'text/plain' });";
-    file << "  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
-    file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
-    file << "}";
+    file << "<div class='container'>";
+    file << "<header><h1>NEON PARKING</h1><div class='subtitle'>REAL-TIME MONITORING SYSTEM</div></header>";
 
-    // NO INTERVAL SCRIPT HERE. MANUAL REFRESH ONLY.
-
-    file << "</script>";
-
-    file << "</head><body>";
-    file << "<h1>SYSTEM ONLINE [" << globalTime << "]</h1>";
-
-    // INPUT FORM
-    file << "<div class='control-panel'>";
-    file << "<div><input type='text' id='vId' placeholder='Vehicle ID'> <input type='number' id='zId' placeholder='Zone (1-3)' style='width: 80px;'> <button onclick=\"sendCmd('PARK')\">PARK</button></div>";
-    file << "<div style='margin-top:10px;'><input type='number' id='remZ' placeholder='Zone' style='width: 70px;'> <input type='number' id='remS' placeholder='Slot' style='width: 70px;'> <button class='btn-red' onclick=\"sendCmd('REMOVE')\">REMOVE</button></div>";
-    file << "<div style='margin-top:10px;'><button class='btn-undo' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
-    file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Browser will download command.txt. Save to project folder.</p>";
+    // KPI Section
+    file << "<div class='kpi-grid'>";
+    file << "<div class='kpi-card'><div class='kpi-val'>" << history->count << "</div><div class='kpi-label'>Total Parked</div></div>";
+    file << "<div class='kpi-card'><div class='kpi-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "s</div><div class='kpi-label'>Avg Duration</div></div>";
+    file << "<div class='kpi-card'><div class='kpi-val'>$" << (int)history->getTotalRevenue() << "</div><div class='kpi-label'>Revenue</div></div>";
     file << "</div>";
 
-    // ZONES DISPLAY
-    file << "<div class='zones-container'>";
+    // Zones Section
+    file << "<div class='zone-grid'>";
     for (int i = 0; i < totalZones; i++)
     {
         file << "<div class='zone-card'>";
-        file << "<div class='zone-title'>ZONE " << zones[i]->zoneID << "</div>";
+        file << "<div class='zone-header'><div class='zone-title'>ZONE " << zones[i]->zoneID << "</div></div>";
+        file << "<div class='slot-list'>";
+        
         for (int a = 0; a < zones[i]->CurCount; a++)
         {
             for (int s = 0; s < zones[i]->areas[a]->currentCount; s++)
             {
                 ParkingSlot *slot = zones[i]->areas[a]->slots[s];
-                if (slot->isOccupied)
-                {
-                    file << "<div class='slot occ'><span>" << slot->vehId << "</span>";
-                    if (slot->currentReq && slot->currentReq->penaltyCost > 0)
-                        file << "<span class='penalty'>PENALTY</span>";
+                
+                if (slot->isOccupied) {
+                    file << "<div class='slot occupied'>";
+                    file << "<span class='veh-id'>" << slot->vehId << "</span>";
+                    file << "<div>";
+                    if(slot->currentReq && slot->currentReq->penaltyCost > 0) file << "<span class='penalty-tag'>PENALTY</span> ";
+                    file << "<span class='status'>OCCUPIED</span>";
+                    file << "</div></div>";
+                } else {
+                    file << "<div class='slot free'>";
+                    file << "<span>Slot " << slot->slotNum << "</span>";
+                    file << "<span class='status'>OPEN</span>";
                     file << "</div>";
-                }
-                else
-                {
-                    file << "<div class='slot free'>SLOT " << slot->slotNum << "</div>";
                 }
             }
         }
-        file << "</div>";
+        file << "</div></div>"; // End Zone Card
     }
-    file << "</div>";
+    file << "</div>"; // End Zone Grid
 
-    // ANALYTICS
-    file << "<div class='stats'>";
-    file << "<div class='stat-item'><div class='stat-val'>" << history->count << "</div><div class='stat-label'>TOTAL TRIPS</div></div>";
-    file << "<div class='stat-item'><div class='stat-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "</div><div class='stat-label'>AVG DURATION</div></div>";
-    file << "<div class='stat-item'><div class='stat-val'>$" << (int)history->getTotalRevenue() << "</div><div class='stat-label'>REVENUE</div></div>";
+    file << "<div class='footer'>SYSTEM TIME: " << globalTime << "TICKS | REFRESH BROWSER TO UPDATE</div>";
     file << "</div>";
-
+    
     file << "</body></html>";
     file.close();
 }
