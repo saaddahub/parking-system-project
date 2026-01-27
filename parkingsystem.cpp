@@ -109,44 +109,55 @@ void ParkingSystem::undoLastAction()
 
 void ParkingSystem::showStatus() {}
 
-// --- THE CYBERPUNK UI GENERATOR (SMART REFRESH EDITION) ---
+// --- MODERN UI + SMART REFRESH GENERATOR ---
 void ParkingSystem::exportToHTML()
 {
     ofstream file("dashboard.html");
 
-    // REMOVED THE META REFRESH TAG HERE
     file << "<html><head>";
     file << "<title>NEON PARKING OS</title>";
+
+    // --- MODERN CSS (Glassmorphism & Cyberpunk) ---
     file << "<style>";
-    file << "body { background-color: #050510; color: #00ffcc; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; }";
-    file << "h1 { text-shadow: 0 0 10px #00ffcc; margin-bottom: 30px; letter-spacing: 5px; }";
+    file << "@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');";
+    file << "body { background: #0b0c15; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; text-align: center; margin: 0; padding: 20px; }";
+    file << "h1 { color: #00ff9d; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px rgba(0, 255, 157, 0.6); margin-bottom: 40px; }";
 
-    // CONTROL PANEL
-    file << ".control-panel { background: rgba(0, 255, 204, 0.05); border: 2px solid #00ffcc; border-radius: 10px; padding: 20px; max-width: 600px; margin: 0 auto 40px auto; box-shadow: 0 0 15px rgba(0,255,204,0.2); }";
-    file << "input { background: #111; border: 1px solid #00ffcc; color: white; padding: 10px; margin: 5px; border-radius: 5px; font-family: inherit; }";
-    file << "button { background: #00ffcc; color: black; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; margin: 5px; border-radius: 5px; transition: 0.3s; }";
-    file << "button:hover { background: white; box-shadow: 0 0 15px white; }";
-    file << ".btn-red { background: #ff3366; color: white; } .btn-red:hover { background: #ff6699; box-shadow: 0 0 15px #ff3366; }";
+    // Control Panel
+    file << ".control-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 25px; max-width: 700px; margin: 0 auto 50px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }";
+    file << "input { background: rgba(0,0,0,0.3); border: 1px solid #333; color: white; padding: 12px; margin: 5px; border-radius: 8px; font-family: inherit; font-size: 1.1em; outline: none; transition: 0.3s; }";
+    file << "input:focus { border-color: #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.2); }";
 
-    // ZONES
-    file << ".zones-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }";
-    file << ".zone-card { background: #0a0a1a; border: 1px solid #333; border-radius: 10px; padding: 15px; width: 280px; position: relative; }";
-    file << ".zone-title { font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; color: #fff; }";
+    // Buttons
+    file << "button { background: linear-gradient(45deg, #00ff9d, #00cc7a); color: #0b0c15; border: none; padding: 12px 30px; font-weight: 800; cursor: pointer; margin: 5px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }";
+    file << "button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4); }";
+    file << ".btn-red { background: linear-gradient(45deg, #ff3e3e, #d60000); color: white; }";
+    file << ".btn-red:hover { box-shadow: 0 5px 15px rgba(255, 62, 62, 0.4); }";
+    file << ".btn-undo { background: linear-gradient(45deg, #f0ad4e, #ec971f); color: white; }";
 
-    // SLOTS
-    file << ".slot { display: flex; justify-content: space-between; padding: 8px; margin: 5px 0; border-radius: 5px; font-weight: bold; }";
-    file << ".free { background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; }";
-    file << ".occ { background: rgba(255, 50, 100, 0.2); border: 1px solid #ff3366; color: #ff3366; }";
-    file << ".penalty { color: yellow; font-size: 0.8em; float: right; }";
+    // Zones Grid
+    file << ".zones-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 0 50px; }";
+    file << ".zone-card { background: #13141f; border-top: 4px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }";
+    file << ".zone-card:hover { transform: translateY(-5px); border-color: #00ff9d; }";
+    file << ".zone-title { font-size: 1.8em; color: #fff; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #2a2b3d; padding-bottom: 10px; }";
 
-    // ANALYTICS
-    file << ".stats { margin-top: 40px; padding: 20px; border-top: 1px solid #333; display: flex; justify-content: center; gap: 50px; }";
-    file << ".stat-item { text-align: center; } .stat-val { font-size: 2em; color: white; }";
+    // Slots
+    file << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; border-radius: 8px; background: #1a1b26; border: 1px solid #2a2b3d; font-weight: 600; }";
+    file << ".free { border-left: 4px solid #00ff9d; color: #a0a0a0; }";
+    file << ".occ { border-left: 4px solid #ff3e3e; background: rgba(255, 62, 62, 0.05); color: #fff; }";
+    file << ".penalty { background: #ff3e3e; color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; margin-left: 10px; }";
 
+    // Stats
+    file << ".stats { display: flex; justify-content: center; gap: 40px; margin-top: 60px; padding: 30px; background: #0f101a; border-top: 1px solid #2a2b3d; }";
+    file << ".stat-item { text-align: center; }";
+    file << ".stat-val { font-size: 3em; font-weight: 800; color: #fff; line-height: 1; }";
+    file << ".stat-label { font-size: 0.9em; color: #888; letter-spacing: 2px; margin-top: 10px; }";
     file << "</style>";
 
-    // JAVASCRIPT LOGIC
+    // --- JAVASCRIPT (Actions + Smart Refresh) ---
     file << "<script>";
+
+    // 1. Command Generator
     file << "function sendCmd(type) {";
     file << "  let content = '';";
     file << "  if(type === 'PARK') {";
@@ -163,13 +174,12 @@ void ParkingSystem::exportToHTML()
     file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
     file << "}";
 
-    // --- SMART REFRESH LOGIC ---
-    // Only refresh if the user is NOT typing in an input box
+    // 2. Smart Refresh (ONLY refreshes if you are NOT typing)
     file << "setInterval(function() {";
     file << "  if (document.activeElement.tagName !== 'INPUT') {";
     file << "    location.reload();";
     file << "  }";
-    file << "}, 2000);"; // Check every 2 seconds
+    file << "}, 2000);";
 
     file << "</script>";
 
@@ -178,11 +188,10 @@ void ParkingSystem::exportToHTML()
 
     // INPUT FORM
     file << "<div class='control-panel'>";
-    file << "<h3>OPERATIONS</h3>";
     file << "<div><input type='text' id='vId' placeholder='Vehicle ID'> <input type='number' id='zId' placeholder='Zone (1-3)' style='width: 80px;'> <button onclick=\"sendCmd('PARK')\">PARK</button></div>";
     file << "<div style='margin-top:10px;'><input type='number' id='remZ' placeholder='Zone' style='width: 70px;'> <input type='number' id='remS' placeholder='Slot' style='width: 70px;'> <button class='btn-red' onclick=\"sendCmd('REMOVE')\">REMOVE</button></div>";
-    file << "<div style='margin-top:10px;'><button style='background: #ffcc00;' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
-    file << "<p style='font-size: 0.8em; color: #888;'>*Browser will download command.txt. Save it to project folder to execute.</p>";
+    file << "<div style='margin-top:10px;'><button class='btn-undo' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
+    file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Browser will download command.txt. Save to project folder.</p>";
     file << "</div>";
 
     // ZONES DISPLAY
@@ -199,9 +208,8 @@ void ParkingSystem::exportToHTML()
                 if (slot->isOccupied)
                 {
                     file << "<div class='slot occ'><span>" << slot->vehId << "</span>";
-                    // Check penalty visually
                     if (slot->currentReq && slot->currentReq->penaltyCost > 0)
-                        file << "<span class='penalty'>[!] $50</span>";
+                        file << "<span class='penalty'>PENALTY</span>";
                     file << "</div>";
                 }
                 else
@@ -216,9 +224,9 @@ void ParkingSystem::exportToHTML()
 
     // ANALYTICS
     file << "<div class='stats'>";
-    file << "<div class='stat-item'><div class='stat-val'>" << history->count << "</div><div>TOTAL TRIPS</div></div>";
-    file << "<div class='stat-item'><div class='stat-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "</div><div>AVG DURATION</div></div>";
-    file << "<div class='stat-item'><div class='stat-val'>$" << (int)history->getTotalRevenue() << "</div><div>REVENUE</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>" << history->count << "</div><div class='stat-label'>TOTAL TRIPS</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "</div><div class='stat-label'>AVG DURATION</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>$" << (int)history->getTotalRevenue() << "</div><div class='stat-label'>REVENUE</div></div>";
     file << "</div>";
 
     file << "</body></html>";
