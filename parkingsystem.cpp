@@ -182,6 +182,7 @@ void ParkingSystem::exportToHTML()
     file << "    if(!z || !s) { alert('Enter Details'); return; }";
     file << "    content = 'REMOVE ' + z + ' ' + s;";
     file << "  if(type === 'TEST') { const blob = new Blob(['TEST'], {type: 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a); return; }";
+    file << "<div style='margin-top:10px;'><button style='background:#444; color:#aaa; font-size:0.9em;' onclick=\"sendCmd('TEST')\">RUN DIAGNOSTICS</button></div>";
     file << "  const blob = new Blob([content], { type: 'text/plain' });";
     file << "  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
     file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
