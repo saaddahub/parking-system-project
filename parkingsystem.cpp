@@ -199,6 +199,7 @@ void ParkingSystem::exportToHTML()
     file << "<div style='margin-top:10px;'><button class='btn-undo' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
     file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Browser will download command.txt. Save to project folder.</p>";
     file << "<div style='margin-top:10px;'><button style='background:#444; color:#aaa; font-size:0.9em;' onclick=\"sendCmd('TEST')\">RUN DIAGNOSTICS</button></div>";
+    file << "<div style='margin-top:10px;'><button style='background: linear-gradient(90deg, #444, #555); color: #fff; width: 100%; font-size: 0.9em; border: 1px solid #666;' onclick=\"sendCmd('TEST')\">RUN DIAGNOSTICS</button></div>";
     file << "</div>";
 
     // ZONES DISPLAY
