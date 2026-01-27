@@ -2,31 +2,38 @@
 #define PARKINGSYSTEM_H
 
 #include "zone.h"
-#include "vehicle.h"
-#include "allocationengine.h"
-#include "parkingrequest.h"
+#include "AllocationEngine.h"
 #include "rollbackmanager.h"
-#include "History.h"
+#include "history.h"
+#include "parkingrequest.h"
+#include <string>
+
+using namespace std;
 
 class ParkingSystem
 {
 public:
-    Zone **zones;
     int totalZones;
+    int globalTime;
+    
+    // Core Components
+    Zone **zones;
     AllocationEngine *engine;
     RollbackManager *rbManager;
     HistoryManager *history;
-    int globalTime;
 
+    // Constructor & Destructor
     ParkingSystem(int numZones, int slotsPerZone);
     ~ParkingSystem();
 
+    // Core Operations
     bool parkVehicle(ParkingRequest *req);
-    bool removeVehicle(int zoneID, int slotNum);
-
+    bool removeVehicle(int zID, int sID);
     void undoLastAction();
     void showStatus();
-    string getHTML(); // Returns HTML string for server response
+
+    // UI Generator (The missing link!)
+    void exportToHTML(); 
 };
 
 #endif

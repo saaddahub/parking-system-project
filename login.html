@@ -3,196 +3,158 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>UMT Parking Access</title>
+    <title>NEON ACCESS</title>
     <style>
-        /* Modern Reset */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
         body {
-            /* Deep Gradient Background */
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            margin: 0;
+            padding: 0;
+            background: #050510;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
+            font-family: 'Rajdhani', sans-serif;
             overflow: hidden;
         }
 
-        .container {
-            /* Glass-like Card Effect */
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 50px 40px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 350px;
-            text-align: center;
-            transition: transform 0.3s ease;
+        /* Moving Grid Background */
+        .bg-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image:
+                linear-gradient(rgba(0, 255, 157, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 157, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            animation: gridMove 10s linear infinite;
         }
 
-        .container:hover {
-            transform: translateY(-5px);
-            /* Whole card floats slightly */
-        }
-
-        h2 {
-            margin-bottom: 30px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: #fff;
-            text-transform: uppercase;
-            font-size: 1.5rem;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
-        /* --- INPUT STYLING --- */
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid transparent;
-            border-radius: 30px;
-            /* Fully rounded corners */
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            text-align: center;
-
-            /* The Animation Magic */
-            transition: all 0.3s ease;
-        }
-
-        /* Placeholder Color */
-        input::placeholder {
-            color: #aaa;
-        }
-
-        /* Hover & Focus Effect (Make it Bigger & Glow) */
-        input:hover,
-        input:focus {
-            transform: scale(1.05);
-            /* Make it slightly bigger */
-            border-color: #00ff88;
-            /* Neon Green Border */
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
-        }
-
-        /* --- BUTTON STYLING --- */
-        button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 10px;
-            background: linear-gradient(45deg, #00b09b, #96c93d);
-            /* Nice Green Gradient */
-            border: none;
-            border-radius: 30px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-
-            /* Animation Magic */
-            transition: all 0.3s ease;
-        }
-
-        /* Hover Effect (Glow & Scale) */
-        button:hover {
-            transform: scale(1.05) translateY(-2px);
-            box-shadow: 0 0 25px rgba(150, 201, 61, 0.7);
-            /* Strong Glow */
-        }
-
-        button:active {
-            transform: scale(0.95);
-            /* Click effect */
-        }
-
-        .error {
-            color: #ff6b6b;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            display: none;
-            text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
-            animation: shake 0.3s ease-in-out;
-        }
-
-        /* Shake animation for error */
-        @keyframes shake {
+        @keyframes gridMove {
             0% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            50% {
-                transform: translateX(5px);
-            }
-
-            75% {
-                transform: translateX(-5px);
+                transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px);
             }
 
             100% {
-                transform: translateX(0);
+                transform: perspective(500px) rotateX(60deg) translateY(50px) translateZ(-200px);
             }
+        }
+
+        /* Glass Card */
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            z-index: 10;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h2 {
+            color: #00ff9d;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+            letter-spacing: 5px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1em;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #00ff9d;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+            transform: scale(1.02);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #00ff9d, #00cc7a);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #050510;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
+        }
+
+        .error {
+            color: #ff3e3e;
+            margin-top: 15px;
+            display: none;
+            text-shadow: 0 0 10px red;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h2>UMT Parking OS</h2>
+    <div class="bg-grid"></div>
 
-        <input type="text" id="username" placeholder="Operator ID" autocomplete="off">
-        <input type="password" id="password" placeholder="Access Code">
-
-        <button onclick="login()">Access System</button>
-
-        <p class="error" id="error-msg">⚠ ACCESS DENIED</p>
+    <div class="login-card">
+        <h2>SECURE GATE</h2>
+        <input type="text" id="user" placeholder="OPERATOR ID">
+        <input type="password" id="pass" placeholder="ACCESS CODE">
+        <button onclick="login()">INITIALIZE</button>
+        <div class="error" id="err">ACCESS DENIED</div>
     </div>
 
     <script>
         function login() {
-            var u = document.getElementById("username").value;
-            var p = document.getElementById("password").value;
-
-            // Credentials check
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
             if (u === "saad" && p === "dsatheory") {
-                window.location.href = "dashboard.html";
+                // Success Animation
+                document.querySelector('button').innerHTML = "ACCESS GRANTED...";
+                document.querySelector('button').style.background = "#fff";
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
             } else {
-                var err = document.getElementById("error-msg");
-                err.style.display = "block";
-
-                // Reset animation to allow shaking again
-                err.style.animation = 'none';
-                err.offsetHeight; /* trigger reflow */
-                err.style.animation = "shake 0.3s ease-in-out";
+                document.getElementById('err').style.display = "block";
+                // Shake Animation
+                const card = document.querySelector('.login-card');
+                card.style.animation = "none";
+                card.offsetHeight; /* trigger reflow */
+                card.style.animation = "shake 0.5s";
             }
         }
-
-        // Allow pressing "Enter" to login
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
     </script>
-
 </body>
 
 </html>

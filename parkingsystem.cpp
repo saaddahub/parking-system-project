@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <sstream>
 
 using namespace std;
 
@@ -29,19 +28,10 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
             }
         }
     }
+    exportToHTML();
 }
 
-ParkingSystem::~ParkingSystem()
-{
-    for (int i = 0; i < totalZones; ++i)
-    {
-        delete zones[i];
-    }
-    delete[] zones;
-    delete engine;
-    delete rbManager;
-    delete history;
-}
+ParkingSystem::~ParkingSystem() {}
 
 bool ParkingSystem::parkVehicle(ParkingRequest *req)
 {
@@ -63,6 +53,7 @@ bool ParkingSystem::parkVehicle(ParkingRequest *req)
         rbManager->pushOperation(PARK_ACTION, req, slot);
 
         this->globalTime++;
+        exportToHTML();
         return true;
     }
 
@@ -92,6 +83,7 @@ bool ParkingSystem::removeVehicle(int zID, int sID)
                         }
                         slot->free();
                         this->globalTime++;
+                        exportToHTML();
                         return true;
                     }
                 }
@@ -112,95 +104,107 @@ void ParkingSystem::undoLastAction()
         action->slot->free();
         action->request->updateStatus(4);
     }
+    exportToHTML();
 }
 
-void ParkingSystem::showStatus()
+void ParkingSystem::showStatus() {}
+// --- NEXT-GEN UI GENERATOR ---
+void ParkingSystem::exportToHTML()
 {
-    // Console debug optional
-}
+    ofstream file("dashboard.html");
 
-// --- THE CYBERPUNK SERVER UI ---
-string ParkingSystem::getHTML()
-{
-    stringstream ss;
-    ss << "<!DOCTYPE html><html><head>";
-    ss << "<title>NEON PARKING SERVER</title>";
+    file << "<html><head>";
+    file << "<title>Lahore PARKING OS</title>";
+    
+    // --- ANIMATED CSS ---
+    file << "<style>";
+    file << "@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');";
+    file << "body { background: #0b0c15; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; text-align: center; margin: 0; padding: 20px; overflow-x: hidden; }";
+    
+    // Header Animation
+    file << "h1 { color: #00ff9d; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 40px; animation: glow 2s ease-in-out infinite alternate; }";
+    file << "@keyframes glow { from { text-shadow: 0 0 10px #00ff9d; } to { text-shadow: 0 0 20px #00ff9d, 0 0 30px #00ff9d; } }";
 
-    // --- MODERN GLASS CSS ---
-    ss << "<style>";
-    ss << "@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');";
-    ss << "body { background: #0b0c15; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; text-align: center; margin: 0; padding: 20px; }";
-    ss << "h1 { color: #00ff9d; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px rgba(0, 255, 157, 0.6); margin-bottom: 40px; }";
+    // Control Panel (Glass)
+    file << ".control-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 25px; max-width: 700px; margin: 0 auto 50px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s; }";
+    file << ".control-panel:hover { box-shadow: 0 0 30px rgba(0, 255, 157, 0.1); border-color: rgba(0, 255, 157, 0.3); }";
 
-    // Control Panel
-    ss << ".control-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 25px; max-width: 700px; margin: 0 auto 50px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }";
-    ss << "input { background: rgba(0,0,0,0.3); border: 1px solid #333; color: white; padding: 12px; margin: 5px; border-radius: 8px; font-family: inherit; font-size: 1.1em; outline: none; transition: 0.3s; }";
-    ss << "input:focus { border-color: #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.2); }";
+    // Inputs & Buttons
+    file << "input { background: rgba(0,0,0,0.3); border: 1px solid #333; color: white; padding: 12px; margin: 5px; border-radius: 8px; font-family: inherit; font-size: 1.1em; outline: none; transition: 0.3s; }";
+    file << "input:focus { border-color: #00ff9d; box-shadow: 0 0 15px rgba(0, 255, 157, 0.2); transform: scale(1.05); }";
+    
+    file << "button { background: linear-gradient(45deg, #00ff9d, #00cc7a); color: #0b0c15; border: none; padding: 12px 30px; font-weight: 800; cursor: pointer; margin: 5px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; position: relative; overflow: hidden; }";
+    file << "button:hover { transform: translateY(-3px); box-shadow: 0 0 20px rgba(0, 255, 157, 0.6); }";
+    file << ".btn-red { background: linear-gradient(45deg, #ff3e3e, #d60000); color: white; }";
+    file << ".btn-red:hover { box-shadow: 0 0 20px rgba(255, 62, 62, 0.6); }";
+    file << ".btn-undo { background: linear-gradient(45deg, #f0ad4e, #ec971f); color: white; }";
 
-    // Buttons
-    ss << "button { background: linear-gradient(45deg, #00ff9d, #00cc7a); color: #0b0c15; border: none; padding: 12px 30px; font-weight: 800; cursor: pointer; margin: 5px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }";
-    ss << "button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4); }";
-    ss << ".btn-red { background: linear-gradient(45deg, #ff3e3e, #d60000); color: white; }";
-    ss << ".btn-red:hover { box-shadow: 0 5px 15px rgba(255, 62, 62, 0.4); }";
-    ss << ".btn-undo { background: linear-gradient(45deg, #f0ad4e, #ec971f); color: white; }";
+    // Grid Layout
+    file << ".zones-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 0 50px; }";
+    
+    // Zone Cards (Slide In Animation)
+    file << ".zone-card { background: #13141f; border-top: 4px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.4s; animation: slideUp 0.8s ease-out; }";
+    file << "@keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }";
+    file << ".zone-card:hover { transform: translateY(-10px) scale(1.02); border-color: #00ff9d; box-shadow: 0 0 30px rgba(0, 255, 157, 0.2); }";
+    
+    file << ".zone-title { font-size: 1.8em; color: #fff; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #2a2b3d; padding-bottom: 10px; }";
+    
+    // Slots (Pulse Animation for Occupied)
+    file << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; border-radius: 8px; background: #1a1b26; border: 1px solid #2a2b3d; font-weight: 600; transition: 0.3s; }";
+    
+    file << ".free { border-left: 4px solid #00ff9d; color: #a0a0a0; }";
+    file << ".free:hover { background: rgba(0, 255, 157, 0.1); cursor: pointer; }";
 
-    // Zones Grid
-    ss << ".zones-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 0 50px; }";
-    ss << ".zone-card { background: #13141f; border-top: 4px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }";
-    ss << ".zone-card:hover { transform: translateY(-5px); border-color: #00ff9d; }";
-    ss << ".zone-title { font-size: 1.8em; color: #fff; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #2a2b3d; padding-bottom: 10px; }";
+    file << ".occ { border-left: 4px solid #ff3e3e; background: rgba(255, 62, 62, 0.1); color: #fff; animation: pulseRed 2s infinite; }";
+    file << "@keyframes pulseRed { 0% { box-shadow: 0 0 0 rgba(255, 62, 62, 0); } 50% { box-shadow: 0 0 15px rgba(255, 62, 62, 0.3); } 100% { box-shadow: 0 0 0 rgba(255, 62, 62, 0); } }";
 
-    // Slots
-    ss << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; border-radius: 8px; background: #1a1b26; border: 1px solid #2a2b3d; font-weight: 600; }";
-    ss << ".free { border-left: 4px solid #00ff9d; color: #a0a0a0; }";
-    ss << ".occ { border-left: 4px solid #ff3e3e; background: rgba(255, 62, 62, 0.05); color: #fff; }";
-    ss << ".penalty { background: #ff3e3e; color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; margin-left: 10px; }";
+    file << ".penalty { background: #ff3e3e; color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; margin-left: 10px; animation: flash 1s infinite; }";
+    file << "@keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }";
 
     // Stats
-    ss << ".stats { display: flex; justify-content: center; gap: 40px; margin-top: 60px; padding: 30px; background: #0f101a; border-top: 1px solid #2a2b3d; }";
-    ss << ".stat-item { text-align: center; }";
-    ss << ".stat-val { font-size: 3em; font-weight: 800; color: #fff; line-height: 1; }";
-    ss << ".stat-label { font-size: 0.9em; color: #888; letter-spacing: 2px; margin-top: 10px; }";
-    ss << "</style>";
+    file << ".stats { display: flex; justify-content: center; gap: 40px; margin-top: 60px; padding: 30px; background: #0f101a; border-top: 1px solid #2a2b3d; }";
+    file << ".stat-item { text-align: center; transition: 0.3s; }";
+    file << ".stat-item:hover { transform: scale(1.1); }";
+    file << ".stat-val { font-size: 3em; font-weight: 800; color: #fff; line-height: 1; }";
+    file << ".stat-label { font-size: 0.9em; color: #888; letter-spacing: 2px; margin-top: 10px; }";
+    file << "</style>";
 
-    // --- JAVASCRIPT (Wired to Server Routes) ---
-    ss << "<script>";
+    // --- JAVASCRIPT ---
+    file << "<script>";
+    file << "function sendCmd(type) {";
+    file << "  let content = '';";
+    file << "  if(type === 'PARK') {";
+    file << "    let v = document.getElementById('vId').value; let z = document.getElementById('zId').value;";
+    file << "    if(!v || !z) { alert('Enter Details'); return; }";
+    file << "    content = 'PARK ' + v + ' ' + z;";
+    file << "  } else if(type === 'REMOVE') {";
+    file << "    let z = document.getElementById('remZ').value; let s = document.getElementById('remS').value;";
+    file << "    if(!z || !s) { alert('Enter Details'); return; }";
+    file << "    content = 'REMOVE ' + z + ' ' + s;";
+    file << "  if(type === 'TEST') { const blob = new Blob(['TEST'], {type: 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a); return; }";
+    file << "  const blob = new Blob([content], { type: 'text/plain' });";
+    file << "  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
+    file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
+    file << "}";
+    file << "</script>";
 
-    ss << "function park() {";
-    ss << "  let v = document.getElementById('vId').value;";
-    ss << "  let z = document.getElementById('zId').value;";
-    ss << "  if(!v || !z) { alert('Enter Details'); return; }";
-    ss << "  window.location.href = '/park?v=' + v + '&z=' + z;";
-    ss << "}";
+    file << "</head><body>";
+    file << "<h1>SYSTEM ONLINE [" << globalTime << "]</h1>";
 
-    ss << "function remove() {";
-    ss << "  let z = document.getElementById('remZ').value;";
-    ss << "  let s = document.getElementById('remS').value;";
-    ss << "  if(!z || !s) { alert('Enter Details'); return; }";
-    ss << "  window.location.href = '/remove?z=' + z + '&s=' + s;";
-    ss << "}";
+    // INPUT FORM
+    file << "<div class='control-panel'>";
+    file << "<div><input type='text' id='vId' placeholder='Vehicle ID'> <input type='number' id='zId' placeholder='Zone (1-3)' style='width: 80px;'> <button onclick=\"sendCmd('PARK')\">PARK</button></div>";
+    file << "<div style='margin-top:10px;'><input type='number' id='remZ' placeholder='Zone' style='width: 70px;'> <input type='number' id='remS' placeholder='Slot' style='width: 70px;'> <button class='btn-red' onclick=\"sendCmd('REMOVE')\">REMOVE</button></div>";
+    file << "<div style='margin-top:10px;'><button class='btn-undo' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
+    file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Browser will download command.txt. Save to project folder.</p>";
+    file << "</div>";
 
-    ss << "function undo() {";
-    ss << "  window.location.href = '/undo';";
-    ss << "}";
-
-    ss << "</script></head><body>";
-
-    ss << "<h1>SYSTEM ONLINE [" << globalTime << "]</h1>";
-
-    // CONTROLS
-    ss << "<div class='control-panel'>";
-    ss << "<div><input type='text' id='vId' placeholder='Vehicle ID'> <input type='number' id='zId' placeholder='Zone (1-3)' style='width: 80px;'> <button onclick='park()'>PARK</button></div>";
-    ss << "<div style='margin-top:10px;'><input type='number' id='remZ' placeholder='Zone' style='width: 70px;'> <input type='number' id='remS' placeholder='Slot' style='width: 70px;'> <button class='btn-red' onclick='remove()'>REMOVE</button></div>";
-    ss << "<div style='margin-top:10px;'><button class='btn-undo' onclick='undo()'>UNDO LAST ACTION</button></div>";
-    ss << "</div>";
-
-    // ZONES
-    ss << "<div class='zones-container'>";
+    // ZONES DISPLAY
+    file << "<div class='zones-container'>";
     for (int i = 0; i < totalZones; i++)
     {
-        ss << "<div class='zone-card'>";
-        ss << "<div class='zone-title'>ZONE " << zones[i]->zoneID << "</div>";
+        file << "<div class='zone-card'>";
+        file << "<div class='zone-title'>ZONE " << zones[i]->zoneID << "</div>";
         for (int a = 0; a < zones[i]->CurCount; a++)
         {
             for (int s = 0; s < zones[i]->areas[a]->currentCount; s++)
@@ -208,28 +212,28 @@ string ParkingSystem::getHTML()
                 ParkingSlot *slot = zones[i]->areas[a]->slots[s];
                 if (slot->isOccupied)
                 {
-                    ss << "<div class='slot occ'><span>" << slot->vehId << "</span>";
+                    file << "<div class='slot occ'><span>" << slot->vehId << "</span>";
                     if (slot->currentReq && slot->currentReq->penaltyCost > 0)
-                        ss << "<span class='penalty'>PENALTY</span>";
-                    ss << "</div>";
+                        file << "<span class='penalty'>PENALTY</span>";
+                    file << "</div>";
                 }
                 else
                 {
-                    ss << "<div class='slot free'>SLOT " << slot->slotNum << "</div>";
+                    file << "<div class='slot free'>SLOT " << slot->slotNum << "</div>";
                 }
             }
         }
-        ss << "</div>";
+        file << "</div>";
     }
-    ss << "</div>";
+    file << "</div>";
 
-    // STATS
-    ss << "<div class='stats'>";
-    ss << "<div class='stat-item'><div class='stat-val'>" << history->count << "</div><div class='stat-label'>TOTAL TRIPS</div></div>";
-    ss << "<div class='stat-item'><div class='stat-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "</div><div class='stat-label'>AVG DURATION</div></div>";
-    ss << "<div class='stat-item'><div class='stat-val'>$" << (int)history->getTotalRevenue() << "</div><div class='stat-label'>REVENUE</div></div>";
-    ss << "</div>";
+    // ANALYTICS
+    file << "<div class='stats'>";
+    file << "<div class='stat-item'><div class='stat-val'>" << history->count << "</div><div class='stat-label'>TOTAL TRIPS</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "</div><div class='stat-label'>AVG DURATION</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>$" << (int)history->getTotalRevenue() << "</div><div class='stat-label'>REVENUE</div></div>";
+    file << "</div>";
 
-    ss << "</body></html>";
-    return ss.str();
+    file << "</body></html>";
+    file.close();
 }
