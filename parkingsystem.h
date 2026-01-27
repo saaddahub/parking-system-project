@@ -26,7 +26,7 @@ public:
 
     void undoLastAction();
     void showStatus();
-    void exportToHTML();
+    string getHTML(); // Returns HTML string for server response
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
             }
         }
     }
-    exportToHTML();
+    // exportToHTML();
 }
 
 ParkingSystem::~ParkingSystem()
@@ -64,7 +65,7 @@ bool ParkingSystem::parkVehicle(ParkingRequest *req)
         rbManager->pushOperation(PARK_ACTION, req, slot);
 
         this->globalTime++;
-        exportToHTML();
+        // exportToHTML(); // Logic decoupled from UI
         return true;
     }
 
@@ -94,7 +95,7 @@ bool ParkingSystem::removeVehicle(int zID, int sID)
                         }
                         slot->free();
                         this->globalTime++;
-                        exportToHTML();
+                        // exportToHTML();
                         return true;
                     }
                 }
@@ -115,7 +116,7 @@ void ParkingSystem::undoLastAction()
         action->slot->free();
         action->request->updateStatus(4);
     }
-    exportToHTML();
+    // exportToHTML();
 }
 
 void ParkingSystem::showStatus() {
@@ -140,79 +141,99 @@ void ParkingSystem::showStatus() {
     cout << "-------------------\n" << endl;
 }
 
-// --- DASHBOARD UI GENERATOR (READ ONLY) ---
-// Premium Design, No JS Interactions needed for user
-void ParkingSystem::exportToHTML()
+// --- DASHBOARD UI GENERATOR (SERVER RESPONSE) ---
+string ParkingSystem::getHTML()
 {
-    ofstream file("dashboard.html");
+    stringstream ss;
+    ss << "<!DOCTYPE html><html><head>";
+    ss << "<title>NEON PARKING MONITOR</title>";
+    
+    // Auto-refresh mechanism? No, actions trigger reload.
+    // Maybe a periodic refresh for read-only views? 
+    // Let's add a small script to refresh every 5s just in case, but actions are instant.
+    
+    ss << "<style>";
+    ss << "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');";
+    ss << "body { background-color: #050505; color: #fff; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; text-align: center; }";
+    ss << "::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }";
+    
+    ss << ".container { max-width: 1200px; margin: 0 auto; }";
+    ss << "header { margin-bottom: 40px; border-bottom: 2px solid #222; padding-bottom: 20px; }";
+    ss << "h1 { font-family: 'Orbitron', sans-serif; font-size: 3em; margin: 0; background: linear-gradient(90deg, #00f260, #0575E6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0, 242, 96, 0.3); }";
 
-    file << "<!DOCTYPE html><html><head>";
-    file << "<title>NEON PARKING MONITOR</title>";
-    
-    // Auto-refresh can be annoying if manually handling, but user asked for "browser should show me".
-    // Since we are doing "manual" reload, I will NOT add meta refresh.
-    
-    file << "<style>";
-    file << "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');";
-    file << "body { background-color: #050505; color: #fff; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }";
-    file << "::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }";
-    
-    file << ".container { max-width: 1200px; margin: 0 auto; }";
-    file << "header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #222; padding-bottom: 20px; }";
-    file << "h1 { font-family: 'Orbitron', sans-serif; font-size: 3em; margin: 0; background: linear-gradient(90deg, #00f260, #0575E6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0, 242, 96, 0.3); }";
-    file << ".subtitle { color: #666; font-size: 1.2em; letter-spacing: 2px; margin-top: 10px; }";
+    // Controls
+    ss << ".control-panel { background: #111; padding: 20px; border-radius: 12px; margin-bottom: 40px; border: 1px solid #333; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }";
+    ss << "form { display: flex; align-items: center; gap: 10px; }";
+    ss << "input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100px; }";
+    ss << "button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: 'Orbitron'; }";
+    ss << ".btn-green { background: #00f260; color: #000; } .btn-green:hover { box-shadow: 0 0 15px #00f260; }";
+    ss << ".btn-red { background: #ff0055; color: #fff; } .btn-red:hover { box-shadow: 0 0 15px #ff0055; }";
+    ss << ".btn-gold { background: #ffcc00; color: #000; } .btn-gold:hover { box-shadow: 0 0 15px #ffcc00; }";
 
     // KPI Cards
-    file << ".kpi-grid { display: flex; justify-content: center; gap: 20px; margin-bottom: 50px; }";
-    file << ".kpi-card { background: #111; border: 1px solid #333; padding: 20px 40px; border-radius: 12px; text-align: center; min-width: 150px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }";
-    file << ".kpi-val { font-size: 2.5em; font-weight: bold; color: #fff; font-family: 'Orbitron'; }";
-    file << ".kpi-label { color: #888; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }";
+    ss << ".kpi-grid { display: flex; justify-content: center; gap: 20px; margin-bottom: 50px; }";
+    ss << ".kpi-card { background: #111; border: 1px solid #333; padding: 20px 40px; border-radius: 12px; min-width: 150px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }";
+    ss << ".kpi-val { font-size: 2.5em; font-weight: bold; color: #fff; font-family: 'Orbitron'; }";
+    ss << ".kpi-label { color: #888; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }";
 
     // Zone Grid
-    file << ".zone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }";
-    file << ".zone-card { background: #0f1012; border-radius: 16px; border: 1px solid #1f2026; padding: 25px; position: relative; overflow: hidden; transition: transform 0.3s; }";
-    file << ".zone-card:hover { transform: translateY(-5px); border-color: #444; }";
-    file << ".zone-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #00f260, #0575E6); }";
-    
-    file << ".zone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }";
-    file << ".zone-title { font-family: 'Orbitron'; font-size: 1.5em; color: #e0e0e0; }";
+    ss << ".zone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; text-align: left; }";
+    ss << ".zone-card { background: #0f1012; border-radius: 16px; border: 1px solid #1f2026; padding: 25px; position: relative; overflow: hidden; transition: transform 0.3s; }";
+    ss << ".zone-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #00f260, #0575E6); }";
+    ss << ".zone-title { font-family: 'Orbitron'; font-size: 1.5em; color: #e0e0e0; margin-bottom: 20px; }";
     
     // Slots
-    file << ".slot-list { display: grid; gap: 10px; }";
-    file << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 8px; background: #18191f; border-left: 5px solid #333; font-weight: 700; font-size: 1.1em; transition: 0.2s; }";
-    
-    // States
-    file << ".slot.free { border-left-color: #00f260; color: #aaa; }";
-    file << ".slot.free .status { color: #00f260; background: rgba(0, 242, 96, 0.1); padding: 4px 10px; border-radius: 4px; font-size: 0.8em; }";
-    
-    file << ".slot.occupied { border-left-color: #ff0055; background: #1f1015; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 85, 0.1); }";
-    file << ".slot.occupied .status { color: #ff0055; background: rgba(255, 0, 85, 0.1); padding: 4px 10px; border-radius: 4px; font-size: 0.8em; }";
-    
-    file << ".veh-id { letter-spacing: 1px; }";
-    file << ".penalty-tag { background: #ffcc00; color: #000; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; margin-left: 10px; font-weight: bold; }";
+    ss << ".slot-list { display: grid; gap: 10px; }";
+    ss << ".slot { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 8px; background: #18191f; border-left: 5px solid #333; font-weight: 700; font-size: 1.1em; }";
+    ss << ".slot.free { border-left-color: #00f260; color: #aaa; }";
+    ss << ".slot.occupied { border-left-color: #ff0055; background: #1f1015; color: #fff; }";
+    ss << ".status { font-size: 0.8em; padding: 4px 10px; border-radius: 4px; }";
+    ss << ".occupied .status { background: rgba(255,0,85,0.2); color: #ff0055; }";
+    ss << ".free .status { background: rgba(0,242,96,0.1); color: #00f260; }";
 
-    // Footer
-    file << ".footer { margin-top: 50px; text-align: center; color: #444; font-size: 0.8em; }";
+    ss << "</style></head><body>";
 
-    file << "</style></head><body>";
+    ss << "<div class='container'>";
+    ss << "<header><h1>NEON PARKING</h1></header>";
 
-    file << "<div class='container'>";
-    file << "<header><h1>NEON PARKING</h1><div class='subtitle'>REAL-TIME MONITORING SYSTEM</div></header>";
+    // CONTROLS FORM (HTTP GET REQUESTS)
+    ss << "<div class='control-panel'>";
+    
+    // Park Form
+    ss << "<form action='/park' method='GET'>";
+    ss << "<input type='text' name='v' placeholder='Vehicle ID' required>";
+    ss << "<input type='number' name='z' placeholder='Zone' required style='width:60px'>";
+    ss << "<button type='submit' class='btn-green'>PARK</button>";
+    ss << "</form>";
+
+    // Remove Form
+    ss << "<form action='/remove' method='GET'>";
+    ss << "<input type='number' name='z' placeholder='Zone' required style='width:60px'>";
+    ss << "<input type='number' name='s' placeholder='Slot' required style='width:60px'>";
+    ss << "<button type='submit' class='btn-red'>REMOVE</button>";
+    ss << "</form>";
+
+    // Undo Form
+    ss << "<form action='/undo' method='GET'>";
+    ss << "<button type='submit' class='btn-gold'>UNDO</button>";
+    ss << "</form>";
+
+    ss << "</div>";
 
     // KPI Section
-    file << "<div class='kpi-grid'>";
-    file << "<div class='kpi-card'><div class='kpi-val'>" << history->count << "</div><div class='kpi-label'>Total Parked</div></div>";
-    file << "<div class='kpi-card'><div class='kpi-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "s</div><div class='kpi-label'>Avg Duration</div></div>";
-    file << "<div class='kpi-card'><div class='kpi-val'>$" << (int)history->getTotalRevenue() << "</div><div class='kpi-label'>Revenue</div></div>";
-    file << "</div>";
+    ss << "<div class='kpi-grid'>";
+    ss << "<div class='kpi-card'><div class='kpi-val'>" << history->count << "</div><div class='kpi-label'>Total Parked</div></div>";
+    ss << "<div class='kpi-card'><div class='kpi-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "s</div><div class='kpi-label'>Avg Duration</div></div>";
+    ss << "<div class='kpi-card'><div class='kpi-val'>$" << (int)history->getTotalRevenue() << "</div><div class='kpi-label'>Revenue</div></div>";
+    ss << "</div>";
 
     // Zones Section
-    file << "<div class='zone-grid'>";
+    ss << "<div class='zone-grid'>";
     for (int i = 0; i < totalZones; i++)
     {
-        file << "<div class='zone-card'>";
-        file << "<div class='zone-header'><div class='zone-title'>ZONE " << zones[i]->zoneID << "</div></div>";
-        file << "<div class='slot-list'>";
+        ss << "<div class='zone-card'>";
+        ss << "<div class='zone-title'>ZONE " << zones[i]->zoneID << "</div>";
+        ss << "<div class='slot-list'>";
         
         for (int a = 0; a < zones[i]->CurCount; a++)
         {
@@ -221,27 +242,26 @@ void ParkingSystem::exportToHTML()
                 ParkingSlot *slot = zones[i]->areas[a]->slots[s];
                 
                 if (slot->isOccupied) {
-                    file << "<div class='slot occupied'>";
-                    file << "<span class='veh-id'>" << slot->vehId << "</span>";
-                    file << "<div>";
-                    if(slot->currentReq && slot->currentReq->penaltyCost > 0) file << "<span class='penalty-tag'>PENALTY</span> ";
-                    file << "<span class='status'>OCCUPIED</span>";
-                    file << "</div></div>";
+                    ss << "<div class='slot occupied'>";
+                    ss << "<span>" << slot->vehId << "</span>";
+                    ss << "<div>";
+                    if(slot->currentReq && slot->currentReq->penaltyCost > 0) ss << "<span style='color:gold;margin-right:5px'>⚠</span> ";
+                    ss << "<span class='status'>OCCUPIED</span>";
+                    ss << "</div></div>";
                 } else {
-                    file << "<div class='slot free'>";
-                    file << "<span>Slot " << slot->slotNum << "</span>";
-                    file << "<span class='status'>OPEN</span>";
-                    file << "</div>";
+                    ss << "<div class='slot free'>";
+                    ss << "<span>Slot " << slot->slotNum << "</span>";
+                    ss << "<span class='status'>OPEN</span>";
+                    ss << "</div>";
                 }
             }
         }
-        file << "</div></div>"; // End Zone Card
+        ss << "</div></div>";
     }
-    file << "</div>"; // End Zone Grid
-
-    file << "<div class='footer'>SYSTEM TIME: " << globalTime << "TICKS | REFRESH BROWSER TO UPDATE</div>";
-    file << "</div>";
+    ss << "</div>";
     
-    file << "</body></html>";
-    file.close();
+    ss << "<footer style='margin-top:50px;color:#444'>System Time: " << globalTime << "</footer>";
+    ss << "</div></body></html>";
+    
+    return ss.str();
 }
