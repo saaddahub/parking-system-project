@@ -16,6 +16,11 @@ public:
     int totalZones;
     int globalTime;
     
+    // Sites
+    string* siteNames;
+    int numSites;
+    int zonesPerSite;
+    
     // Core Components
     Zone **zones;
     AllocationEngine *engine;
@@ -27,7 +32,14 @@ public:
     ~ParkingSystem();
 
     // Core Operations
+    // Core Operations
     bool parkVehicle(ParkingRequest *req);
+    // Overload for Site-Specific Parking if needed, or handle in vehicle?
+    // User input: Site Index, Zone Index.
+    // Vehicle PrefZoneID is likely just 1-3. We need to store SiteID in Vehicle too?
+    // Or just Map (Site, Zone) -> GlobalZoneID before creating Vehicle.
+    // Let's stick to Global ID internally, but UI presents Site + Zone.
+    
     bool removeVehicle(int zID, int sID);
     void undoLastAction();
     void rollback(int k); // Batch Rollback

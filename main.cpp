@@ -81,7 +81,8 @@ void runComplianceTests(ParkingSystem &sys) {
 // --- MAIN SERVER ---
 int main() {
     // 1. Setup Logic
-    ParkingSystem sys(3, 2);
+    // 4 Sites (Airport, Mall, etc.), 3 Zones each.
+    ParkingSystem sys(4, 3);
     
     // 2. Setup Winsock
     WSADATA wsaData;
@@ -131,7 +132,13 @@ int main() {
 
             cout << "[REQ] " << method << " " << path << endl;
 
-            if (path == "/" || path == "/index.html" || path.find("/dashboard") == 0) {
+            if (path == "/" || path == "/index.html" || path == "/login.html") {
+                // Serve Login Page
+                string html = readFile("login.html");
+                if(html.empty()) html = "<h1>Login Page Missing</h1>";
+                sendResponse(client, "200 OK", html);
+            }
+            else if (path.find("/dashboard") == 0) {
                 // Serve Dashboard
                 string html = readFile("dashboard.html");
                 if(html.empty()) {
@@ -147,8 +154,9 @@ int main() {
                 string zStr = getParam(path, "z");
                 if(!vID.empty() && !zStr.empty()) {
                     int zID = stoi(zStr);
-                    sys.parkVehicle(new ParkingRequest(new Vehicle(vID, zID)));
-                    sendResponse(client, "200 OK", "OK");
+                    bool success = sys.parkVehicle(new ParkingRequest(new Vehicle(vID, zID)));
+                    if(success) sendResponse(client, "200 OK", "OK");
+                    else sendResponse(client, "400 Bad Request", "Duplicate Vehicle or Full");
                 } else {
                     sendResponse(client, "400 Bad Request", "Missing Params");
                 }
