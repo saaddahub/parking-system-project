@@ -26,6 +26,7 @@ public:
     void pushOperation(int type, ParkingRequest *req, ParkingSlot *slot);
     RollbackNode *popOperation();
     bool isEmpty();
+    ~RollbackManager();
 };
 
 #endif

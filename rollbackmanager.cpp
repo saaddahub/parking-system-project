@@ -30,3 +30,16 @@ bool RollbackManager::isEmpty()
 {
     return top == nullptr;
 }
+
+RollbackManager::~RollbackManager()
+{
+    while(top != nullptr) {
+        RollbackNode* temp = top;
+        top = top->next;
+        // Don't delete the request/vehicle here because they might be in History or active use.
+        // The undo stack just holds references to actions.
+        // Actually, if we undo a PARK action, we might have to delete the request if it's not used anywhere else?
+        // But for shutdown, we just want to clear the nodes.
+        delete temp;
+    }
+}

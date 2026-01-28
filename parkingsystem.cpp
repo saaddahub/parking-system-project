@@ -41,7 +41,15 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
     exportToHTML();
 }
 
-ParkingSystem::~ParkingSystem() {}
+ParkingSystem::~ParkingSystem() {
+    delete history;
+    delete rbManager;
+    delete engine;
+    for(int i=0; i<totalZones; i++) {
+        delete zones[i]; // Zone destructor should handle areas/slots
+    }
+    delete[] zones;
+}
 
 bool ParkingSystem::parkVehicle(ParkingRequest *req)
 {
@@ -75,6 +83,9 @@ bool ParkingSystem::parkVehicle(ParkingRequest *req)
     }
 
     req->setState(CANCELLED);
+    // MEMORY FIX: System refused it. Delete it.
+    if(req->vehicle) delete req->vehicle;
+    delete req;
     return false;
 }
 
@@ -131,6 +142,18 @@ void ParkingSystem::undoLastAction()
         
         // Track Cancellation
         history->recordCancellation();
+
+        // MEMORY FIX: The request is now dead. It's not in a slot, and not in history (only count incremented).
+        // We MUST delete it to avoid leak.
+        if(action->request) {
+            if(action->request->vehicle) delete action->request->vehicle;
+            delete action->request; 
+        }
+        
+        // The 'action' node itself is deleted by the caller (popOperation doesn't delete, caller does).
+        // Wait, popOperation returns a pointer to a node that was detached from the list.
+        // We are holding 'action'. We need to delete it.
+        delete action;
     }
     exportToHTML();
 }
@@ -209,25 +232,21 @@ void ParkingSystem::exportToHTML()
     // --- JAVASCRIPT ---
     file << "<script>";
     file << "function sendCmd(type) {";
-    file << "  if(type === 'TEST') {";
-    file << "    const blob = new Blob(['TEST'], { type: 'text/plain' });";
-    file << "    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
-    file << "    a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
-    file << "    return;";
-    file << "  }";
-    file << "  let content = '';";
-    file << "  if(type === 'PARK') {";
+    file << "  let url = '';";
+    file << "  if(type === 'TEST') url = '/api/test';";
+    file << "  else if(type === 'PARK') {";
     file << "    let v = document.getElementById('vId').value; let z = document.getElementById('zId').value;";
     file << "    if(!v || !z) { alert('Enter Details'); return; }";
-    file << "    content = 'PARK ' + v + ' ' + z;";
+    file << "    url = '/api/park?v=' + encodeURIComponent(v) + '&z=' + encodeURIComponent(z);";
     file << "  } else if(type === 'REMOVE') {";
     file << "    let z = document.getElementById('remZ').value; let s = document.getElementById('remS').value;";
     file << "    if(!z || !s) { alert('Enter Details'); return; }";
-    file << "    content = 'REMOVE ' + z + ' ' + s;";
-    file << "  } else if(type === 'UNDO') { content = 'UNDO'; }";
-    file << "  const blob = new Blob([content], { type: 'text/plain' });";
-    file << "  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
-    file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
+    file << "    url = '/api/remove?z=' + encodeURIComponent(z) + '&s=' + encodeURIComponent(s);";
+    file << "  } else if(type === 'UNDO') { url = '/api/undo'; }";
+    file << "  fetch(url, { method: 'POST' }).then(r => {";
+    file << "    if(r.ok) location.reload();";
+    file << "    else alert('Server Error');";
+    file << "  }).catch(e => alert('Connection Lost. Is Main.exe running?'));";
     file << "}";
     file << "</script>";
 
@@ -240,7 +259,7 @@ void ParkingSystem::exportToHTML()
     file << "<div><input type='text' id='vId' placeholder='Vehicle ID'> <input type='number' id='zId' placeholder='Zone (1-3)' style='width: 80px;'> <button onclick=\"sendCmd('PARK')\">PARK</button></div>";
     file << "<div style='margin-top:10px;'><input type='number' id='remZ' placeholder='Zone' style='width: 70px;'> <input type='number' id='remS' placeholder='Slot' style='width: 70px;'> <button class='btn-red' onclick=\"sendCmd('REMOVE')\">REMOVE</button></div>";
     file << "<div style='margin-top:10px;'><button class='btn-undo' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
-    file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Browser will download command.txt. Save to project folder.</p>";
+    file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Connected to Localhost:8080. Actions are instant.</p>";
     file << "</div>";
 
     // ZONES DISPLAY

@@ -88,6 +88,27 @@ public:
         }
         return total;
     }
+    ~HistoryManager() {
+        HistoryRecord* current = head;
+        while(current != nullptr) {
+            HistoryRecord* next = current->next;
+            // The actual data (ParkingRequest) is shared.
+            // If History owns it, delete it. 
+            // Requests are created in main/parkingsystem.
+            // When a request is completed, it goes to History.
+            // When cancelled (undo), it might be deleted or kept in a cancelled list?
+            // Currently, cancelled ones are not added to History list (just counted).
+            // So History only has 'RELEASED' requests? No, addRecord is called in removeVehicle.
+            // So yes, we should delete them here if we are shutting down.
+            if(current->data) {
+                if(current->data->vehicle) delete current->data->vehicle;
+                delete current->data;
+            }
+            delete current;
+            current = next;
+        }
+        delete[] zoneCounts;
+    }
 };
 
 #endif
