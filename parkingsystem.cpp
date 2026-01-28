@@ -11,9 +11,11 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
     this->globalTime = 0;
     this->engine = new AllocationEngine();
     this->rbManager = new RollbackManager();
-    this->history = new HistoryManager();
+    // Initialize History with NumZones
+    this->history = new HistoryManager(numZones); 
     this->zones = new Zone *[totalZones];
 
+    // 1. Create Zones
     for (int i = 0; i < totalZones; i++)
     {
         this->zones[i] = new Zone(i + 1, 2);
@@ -28,6 +30,14 @@ ParkingSystem::ParkingSystem(int numZones, int slotsPerZone)
             }
         }
     }
+
+    // 2. Setup Adjacency (Linear Graph: 1 <-> 2 <-> 3 ...)
+    for (int i = 0; i < totalZones; i++)
+    {
+        if (i > 0) zones[i]->addNeighbor(zones[i - 1]); // Previous
+        if (i < totalZones - 1) zones[i]->addNeighbor(zones[i + 1]); // Next
+    }
+
     exportToHTML();
 }
 
@@ -35,7 +45,9 @@ ParkingSystem::~ParkingSystem() {}
 
 bool ParkingSystem::parkVehicle(ParkingRequest *req)
 {
-    req->updateStatus(0);
+    // New Request State
+    req->setState(REQUESTED);
+
     ParkingSlot *slot = engine->assignSlot(req->vehicle, zones, totalZones);
 
     if (slot)
@@ -45,19 +57,24 @@ bool ParkingSystem::parkVehicle(ParkingRequest *req)
             req->penaltyCost = 50.0;
         }
 
-        req->updateStatus(1);
-        req->updateStatus(2);
+        // Strict State: REQUESTED -> ALLOCATED -> OCCUPIED
+        req->setState(ALLOCATED);
+        req->setState(OCCUPIED);
+        
         req->startTime = this->globalTime;
 
         slot->occupy(req->vehicle->vehId, req);
         rbManager->pushOperation(PARK_ACTION, req, slot);
+        
+        // Analytics: Record Usage of the ACTUAL zone where it parked
+        history->recordUsage(slot->zoneNum); 
 
         this->globalTime++;
         exportToHTML();
         return true;
     }
 
-    req->updateStatus(4);
+    req->setState(CANCELLED);
     return false;
 }
 
@@ -78,8 +95,10 @@ bool ParkingSystem::removeVehicle(int zID, int sID)
                         if (finishedReq != nullptr)
                         {
                             finishedReq->endTime = this->globalTime;
-                            finishedReq->updateStatus(3);
+                            // STATE: OCCUPIED -> RELEASED
+                            finishedReq->setState(RELEASED);
                             history->addRecord(finishedReq);
+                            history->recordCompletion(); // Track Completion
                         }
                         slot->free();
                         this->globalTime++;
@@ -101,13 +120,31 @@ void ParkingSystem::undoLastAction()
     RollbackNode *action = rbManager->popOperation();
     if (action->type == PARK_ACTION)
     {
+        // Undo Park: Free slot, Cancel Request
         action->slot->free();
-        action->request->updateStatus(4);
+        
+        bool success = action->request->setState(CANCELLED); 
+        if(!success) {
+             cout << "FORCE CHANGING STATE DUE TO ROLLBACK" << endl;
+             action->request->status = CANCELLED;
+        }
+        
+        // Track Cancellation
+        history->recordCancellation();
     }
     exportToHTML();
 }
 
+void ParkingSystem::rollback(int k) {
+    cout << "ROLLING BACK " << k << " STEPS..." << endl;
+    for(int i=0; i<k; i++) {
+        if(rbManager->isEmpty()) break;
+        undoLastAction();
+    }
+}
+
 void ParkingSystem::showStatus() {}
+
 // --- NEXT-GEN UI GENERATOR ---
 void ParkingSystem::exportToHTML()
 {
@@ -172,6 +209,12 @@ void ParkingSystem::exportToHTML()
     // --- JAVASCRIPT ---
     file << "<script>";
     file << "function sendCmd(type) {";
+    file << "  if(type === 'TEST') {";
+    file << "    const blob = new Blob(['TEST'], { type: 'text/plain' });";
+    file << "    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
+    file << "    a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
+    file << "    return;";
+    file << "  }";
     file << "  let content = '';";
     file << "  if(type === 'PARK') {";
     file << "    let v = document.getElementById('vId').value; let z = document.getElementById('zId').value;";
@@ -182,7 +225,6 @@ void ParkingSystem::exportToHTML()
     file << "    if(!z || !s) { alert('Enter Details'); return; }";
     file << "    content = 'REMOVE ' + z + ' ' + s;";
     file << "  } else if(type === 'UNDO') { content = 'UNDO'; }";
-    file << "  if(type === 'TEST') { const blob = new Blob(['TEST'], {type: 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a); return; }";
     file << "  const blob = new Blob([content], { type: 'text/plain' });";
     file << "  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);";
     file << "  a.download = 'command.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);";
@@ -194,12 +236,11 @@ void ParkingSystem::exportToHTML()
 
     // INPUT FORM
     file << "<div class='control-panel'>";
+    file << "<div style='margin-top:10px;'><button style='width: 100%; background: linear-gradient(90deg, #444, #666); color: white; padding: 12px; border: 1px solid #777; font-weight: bold; cursor: pointer;' onclick=\"sendCmd('TEST')\">RUN DIAGNOSTICS (TEST SUITE)</button></div>";
     file << "<div><input type='text' id='vId' placeholder='Vehicle ID'> <input type='number' id='zId' placeholder='Zone (1-3)' style='width: 80px;'> <button onclick=\"sendCmd('PARK')\">PARK</button></div>";
     file << "<div style='margin-top:10px;'><input type='number' id='remZ' placeholder='Zone' style='width: 70px;'> <input type='number' id='remS' placeholder='Slot' style='width: 70px;'> <button class='btn-red' onclick=\"sendCmd('REMOVE')\">REMOVE</button></div>";
     file << "<div style='margin-top:10px;'><button class='btn-undo' onclick=\"sendCmd('UNDO')\">UNDO LAST ACTION</button></div>";
     file << "<p style='font-size: 0.8em; color: #888; margin-top:15px;'>*Browser will download command.txt. Save to project folder.</p>";
-    file << "<div style='margin-top:10px;'><button style='background:#444; color:#aaa; font-size:0.9em;' onclick=\"sendCmd('TEST')\">RUN DIAGNOSTICS</button></div>";
-    file << "<div style='margin-top:10px;'><button style='background: linear-gradient(90deg, #444, #555); color: #fff; width: 100%; font-size: 0.9em; border: 1px solid #666;' onclick=\"sendCmd('TEST')\">RUN DIAGNOSTICS</button></div>";
     file << "</div>";
 
     // ZONES DISPLAY
@@ -232,8 +273,9 @@ void ParkingSystem::exportToHTML()
 
     // ANALYTICS
     file << "<div class='stats'>";
-    file << "<div class='stat-item'><div class='stat-val'>" << history->count << "</div><div class='stat-label'>TOTAL TRIPS</div></div>";
-    file << "<div class='stat-item'><div class='stat-val'>" << fixed << setprecision(1) << history->getAverageDuration() << "</div><div class='stat-label'>AVG DURATION</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>" << history->completedCount << "</div><div class='stat-label'>COMPLETED</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>" << history->cancelledCount << "</div><div class='stat-label'>CANCELLED</div></div>";
+    file << "<div class='stat-item'><div class='stat-val'>ZONE " << history->getPeakZone() << "</div><div class='stat-label'>PEAK ZONE</div></div>";
     file << "<div class='stat-item'><div class='stat-val'>$" << (int)history->getTotalRevenue() << "</div><div class='stat-label'>REVENUE</div></div>";
     file << "</div>";
 

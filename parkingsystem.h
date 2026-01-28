@@ -30,6 +30,7 @@ public:
     bool parkVehicle(ParkingRequest *req);
     bool removeVehicle(int zID, int sID);
     void undoLastAction();
+    void rollback(int k); // Batch Rollback
     void showStatus();
 
     // UI Generator (The missing link!)

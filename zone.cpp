@@ -5,17 +5,22 @@ Zone::Zone(int id, int cap)
     this->zoneID = id;
     this->capacity = cap;
     this->CurCount = 0;
-
     this->areas = new ParkingArea *[capacity];
-    for (int i = 0; i < capacity; i++)
-        this->areas[i] = nullptr;
+
+    // Initialize Neighbors (Dynamic Array)
+    this->neighborCapacity = 5; // Default max 5 neighbors
+    this->neighborCount = 0;
+    this->neighbors = new Zone *[neighborCapacity];
 }
 
 Zone::~Zone()
 {
     for (int i = 0; i < CurCount; i++)
+    {
         delete areas[i];
+    }
     delete[] areas;
+    delete[] neighbors; // Clean up adjacency
 }
 
 void Zone::addArea(int areaID, int capacityPerArea)
@@ -24,6 +29,15 @@ void Zone::addArea(int areaID, int capacityPerArea)
     {
         areas[CurCount] = new ParkingArea(areaID, this->zoneID, capacityPerArea);
         CurCount++;
+    }
+}
+
+void Zone::addNeighbor(Zone *neighbor)
+{
+    if (neighborCount < neighborCapacity)
+    {
+        neighbors[neighborCount] = neighbor;
+        neighborCount++;
     }
 }
 

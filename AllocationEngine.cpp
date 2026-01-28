@@ -1,51 +1,54 @@
 #include "allocationengine.h"
+#include "zone.h"
 #include <iostream>
 using namespace std;
 
 ParkingSlot *AllocationEngine::assignSlot(Vehicle *v, Zone **zones, int numZones)
 {
-    // 1. Check Preferred Zone
-    for (int i = 0; i < numZones; i++)
-    {
-        if (zones[i]->zoneID == v->preferredZoneID)
-        {
-            if (!zones[i]->isFull())
-            {
-                for (int a = 0; a < zones[i]->CurCount; a++)
-                {
-                    for (int s = 0; s < zones[i]->areas[a]->currentCount; s++)
-                    {
-                        if (!zones[i]->areas[a]->slots[s]->isOccupied)
-                        {
-                            return zones[i]->areas[a]->slots[s];
-                        }
-                    }
-                }
-            }
+    Zone* preferred = nullptr;
+    // 1. Find Preferred Zone Object
+    for(int i=0; i<numZones; i++) {
+        if(zones[i]->zoneID == v->preferredZoneID) {
+            preferred = zones[i];
             break;
         }
     }
 
-    // 2. Cross-Zone Allocation
-    cout << "Preferred zone full... Searching elsewhere." << endl;
-    for (int i = 0; i < numZones; i++)
+    if(!preferred) return nullptr;
+
+    // 2. Try Preferred Zone
+    if (!preferred->isFull())
     {
-        if (zones[i]->zoneID == v->preferredZoneID)
-            continue;
-        if (!zones[i]->isFull())
+        for (int a = 0; a < preferred->CurCount; a++)
         {
-            for (int a = 0; a < zones[i]->CurCount; a++)
+            for (int s = 0; s < preferred->areas[a]->currentCount; s++)
             {
-                for (int s = 0; s < zones[i]->areas[a]->currentCount; s++)
+                if (!preferred->areas[a]->slots[s]->isOccupied)
                 {
-                    if (!zones[i]->areas[a]->slots[s]->isOccupied)
+                    return preferred->areas[a]->slots[s];
+                }
+            }
+        }
+    }
+
+    // 3. Cross-Zone Allocation (Using Adjacency)
+    cout << "Preferred zone full... Searching NEIGHBORS." << endl;
+    for(int i=0; i<preferred->neighborCount; i++) {
+        Zone* neighbor = preferred->neighbors[i];
+        if(!neighbor->isFull()) {
+             for (int a = 0; a < neighbor->CurCount; a++)
+            {
+                for (int s = 0; s < neighbor->areas[a]->currentCount; s++)
+                {
+                    if (!neighbor->areas[a]->slots[s]->isOccupied)
                     {
-                        cout << "Re-routed to Zone " << zones[i]->zoneID << endl;
-                        return zones[i]->areas[a]->slots[s];
+                        cout << "Re-routed to Neighbor Zone " << neighbor->zoneID << endl;
+                        return neighbor->areas[a]->slots[s];
                     }
                 }
             }
         }
     }
+    
     return nullptr;
 }

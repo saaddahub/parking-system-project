@@ -2,12 +2,6 @@
 #include <iostream>
 using namespace std;
 
-const int REQUESTED = 0;
-const int ALLOCATED = 1;
-const int OCCUPIED = 2;
-const int COMPLETED = 3;
-const int CANCELLED = 4;
-
 ParkingRequest::ParkingRequest(Vehicle *v)
 {
     this->vehicle = v;
@@ -17,12 +11,49 @@ ParkingRequest::ParkingRequest(Vehicle *v)
     this->penaltyCost = 0.0;
 }
 
-void ParkingRequest::updateStatus(int newStatus)
-{ // <--- FIXED: Only one opening bracket here
-    if (this->status == REQUESTED && newStatus == OCCUPIED)
+bool ParkingRequest::setState(RequestState newState)
+{
+    // Idempotency check: If new state is same as current, return true (no-op)
+    if (this->status == newState) return true;
+
+    bool allowed = false;
+    switch (this->status)
     {
-        cout << "ERROR, invalid state Transition" << endl;
-        return;
+    case REQUESTED:
+        if (newState == ALLOCATED || newState == CANCELLED) allowed = true;
+        break;
+    case ALLOCATED:
+        if (newState == OCCUPIED || newState == CANCELLED) allowed = true;
+        break;
+    case OCCUPIED:
+        // Allow RELEASED (Normal exit) or CANCELLED (Rollback)
+        if (newState == RELEASED || newState == CANCELLED) allowed = true;
+        break;
+    case RELEASED:
+        // Terminal state
+        break;
+    case CANCELLED:
+        // Terminal state
+        break;
     }
-    this->status = newStatus;
+
+    if (allowed)
+    {
+        this->status = newState;
+        return true;
+    }
+    
+    cout << "[ERROR] Invalid State Transition from " << this->status << " to " << newState << endl;
+    return false;
+}
+
+string ParkingRequest::getStateString() {
+    switch(status) {
+        case REQUESTED: return "REQUESTED";
+        case ALLOCATED: return "ALLOCATED";
+        case OCCUPIED: return "OCCUPIED";
+        case RELEASED: return "RELEASED";
+        case CANCELLED: return "CANCELLED";
+        default: return "UNKNOWN";
+    }
 }

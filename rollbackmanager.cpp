@@ -1,28 +1,29 @@
 #include "rollbackmanager.h"
 #include <iostream>
+using namespace std;
 
 RollbackManager::RollbackManager()
 {
-    this->top = nullptr;
+    top = nullptr;
 }
 
 void RollbackManager::pushOperation(int type, ParkingRequest *req, ParkingSlot *slot)
 {
-    RollbackNode *newNode = new RollbackNode;
-    newNode->type = type;
-    newNode->request = req;
-    newNode->slot = slot;
-    newNode->next = top;
-    top = newNode;
+    RollbackNode *node = new RollbackNode();
+    node->type = type;
+    node->request = req;
+    node->slot = slot;
+    node->next = top;
+    top = node;
 }
 
 RollbackNode *RollbackManager::popOperation()
 {
-    if (isEmpty())
+    if (top == nullptr)
         return nullptr;
-    RollbackNode *temp = top;
+    RollbackNode *node = top;
     top = top->next;
-    return temp;
+    return node;
 }
 
 bool RollbackManager::isEmpty()
